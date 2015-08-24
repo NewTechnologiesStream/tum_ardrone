@@ -22,7 +22,11 @@ float32     pitch
 float32     yaw
 float32     dyaw
 
-
+# ----------------- autopilot reference frame ----------------------------
+float32     ref_x
+float32     ref_y
+float32     ref_z
+float32     ref_yaw
 
 # --------------------- other values ---------------------------
 float32     scale         # ptam scale factor (PTAMpos * scale = WORLDpos).

@@ -83,6 +83,7 @@ ControlNode::ControlNode()
 
 	// services handler
 	setReference_ = nh_.advertiseService("drone_autopilot/setReference", &ControlNode::setReference, this);
+    getReference_ = nh_.advertiseService("drone_autopilot/getReference", &ControlNode::getReference, this);
 	setMaxControl_ = nh_.advertiseService("drone_autopilot/setMaxControl", &ControlNode::setMaxControl, this);
 	setInitialReachDistance_ = nh_.advertiseService("drone_autopilot/setInitialReachDistance", &ControlNode::setInitialReachDistance, this);
 	setStayWithinDistance_ = nh_.advertiseService("drone_autopilot/setStayWithinDistance", &ControlNode::setStayWithinDistance, this);
@@ -552,6 +553,17 @@ bool ControlNode::setReference(SetReference::Request& req, SetReference::Respons
 	parameter_referenceZero = DronePosition(TooN::makeVector(req.x, req.y, req.z), req.heading);
 	res.status = true;
 	return true;
+}
+
+bool ControlNode::getReference(GetReference::Request& req, GetReference::Response& res)
+{
+  ROS_INFO("calling service getReference");
+  res.x = parameter_referenceZero.pos[0];
+  res.y = parameter_referenceZero.pos[1];
+  res.z = parameter_referenceZero.pos[2];
+  res.heading = parameter_referenceZero.yaw;
+  res.status = true;
+  return true;
 }
 
 bool ControlNode::setMaxControl(SetMaxControl::Request& req, SetMaxControl::Response& res)

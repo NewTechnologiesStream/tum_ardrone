@@ -32,6 +32,7 @@
 #include "std_srvs/Empty.h"
 
 #include "tum_ardrone/SetReference.h"
+#include "tum_ardrone/GetReference.h"
 #include "tum_ardrone/SetMaxControl.h"
 #include "tum_ardrone/SetInitialReachDistance.h"
 #include "tum_ardrone/SetStayWithinDistance.h"
@@ -71,6 +72,7 @@ private:
 
 	// services
 	ros::ServiceServer setReference_;
+    ros::ServiceServer getReference_;
 	ros::ServiceServer setMaxControl_;
 	ros::ServiceServer setInitialReachDistance_;
 	ros::ServiceServer setStayWithinDistance_;
@@ -82,6 +84,7 @@ private:
 	ros::ServiceServer lockScaleFP_;
 
 	bool setReference(tum_ardrone::SetReference::Request&, tum_ardrone::SetReference::Response&);
+    bool getReference(tum_ardrone::GetReference::Request&, tum_ardrone::GetReference::Response&);
 	bool setMaxControl(tum_ardrone::SetMaxControl::Request&, tum_ardrone::SetMaxControl::Response&);
 	bool setInitialReachDistance(tum_ardrone::SetInitialReachDistance::Request&, tum_ardrone::SetInitialReachDistance::Response&);
 	bool setStayWithinDistance(tum_ardrone::SetStayWithinDistance::Request&, tum_ardrone::SetStayWithinDistance::Response&);
@@ -128,7 +131,7 @@ public:
 	void dynConfCb(tum_ardrone::AutopilotParamsConfig &config, uint32_t level);
 
 	// main pose-estimation loop
-	void Loop();
+    void Loop();
 
 	// writes a string message to "/tum_ardrone/com".
 	// is thread-safe (can be called by any thread, but may block till other calling thread finishes)

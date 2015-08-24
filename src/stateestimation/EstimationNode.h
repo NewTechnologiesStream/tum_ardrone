@@ -32,6 +32,7 @@
 #include "std_srvs/Empty.h"
 #include "ardrone_autonomy/Navdata.h"
 #include "tum_ardrone/filter_state.h"
+#include "tum_ardrone/GetReference.h"
 #include "std_msgs/String.h"
 #include <dynamic_reconfigure/server.h>
 #include "tum_ardrone/StateestimationParamsConfig.h"
@@ -79,7 +80,8 @@ private:
 	std::string video_channel;
 	std::string command_channel;
 
-
+    //Service client for autopilot reference frame
+    ros::ServiceClient get_reference_client;
 
 	// for navdata time-smoothing
 	long lastDroneTS;

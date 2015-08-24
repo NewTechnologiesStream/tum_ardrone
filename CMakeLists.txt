@@ -49,6 +49,7 @@ add_service_files(
 	DIRECTORY srv
 	FILES
 	SetReference.srv
+        GetReference.srv
 	SetMaxControl.srv
 	SetInitialReachDistance.srv
 	SetStayWithinDistance.srv

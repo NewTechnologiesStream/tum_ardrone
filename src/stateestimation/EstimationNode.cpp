@@ -106,6 +106,8 @@ EstimationNode::EstimationNode()
 
     initialYaw = 0;
 
+    // init "GetReference" frame service client
+    get_reference_client = nh_.serviceClient<tum_ardrone::GetReference>("drone_autopilot/getReference");
 }
 
 EstimationNode::~EstimationNode()
@@ -289,6 +291,20 @@ void EstimationNode::Loop()
 		  s.ptamState = ptamWrapper->PTAMStatus;
 		  s.droneState = lastNavdataReceived.state;
 		  s.batteryPercent = lastNavdataReceived.batteryPercent;
+
+          // Build request and get reference values from service
+          tum_ardrone::GetReference srv;
+          if(get_reference_client.call(srv))
+          {
+              s.ref_x = srv.response.x;
+              s.ref_y = srv.response.y;
+              s.ref_z = srv.response.z;
+              s.ref_yaw = srv.response.heading;
+          }
+          else
+          {
+              ROS_ERROR("Failed to call drone_autopilot/getReference service.");
+          }
 
 		  // publish!
 		  dronepose_pub.publish(s);
