@@ -35,7 +35,7 @@ RosThread::RosThread()
 	navdataCount = velCount = dronePoseCount = joyCount = velCount100ms = 0;
 	keepRunning = true;
 	lastJoyControlSent = ControlCommand(0,0,0,0);
-	lastL1Pressed = lastR1Pressed = false;
+    lastL1Pressed = lastR1Pressed = false;
 }
 
 RosThread::~RosThread(void)
@@ -163,6 +163,12 @@ void RosThread::comCb(const std_msgs::StringConstPtr str)
 	}
 }
 
+bool RosThread::sendCommand(tum_ardrone::SendCommand::Request &req, tum_ardrone::SendCommand::Response &res){
+    ROS_INFO("calling service /drone_gui/SendCommand");
+    publishCommand(req.command);
+    return true;
+}
+
 void RosThread::sendResetMsg() {
     pub_reset.publish(emp_msg);
 }
@@ -194,6 +200,8 @@ void RosThread::run()
     flattrim_srv         = nh_.serviceClient<std_srvs::Empty>(nh_.resolveName("ardrone/flattrim"),1);
 
     pub_reset = nh_.advertise<std_msgs::Empty>("ardrone/reset", 1); //send robot input on /cmd_vel topic
+
+    sendCommand_srv = nh_.advertiseService("drone_gui/SendCommand", &RosThread::sendCommand, this);
 
 	ros::Time last = ros::Time::now();
 	ros::Time lastHz = ros::Time::now();
@@ -299,3 +307,4 @@ void RosThread::sendFlattrim()
 	flattrim_srv.call(flattrim_srv_srvs);
 	pthread_mutex_unlock(&send_CS);
 }
+

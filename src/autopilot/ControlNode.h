@@ -48,7 +48,7 @@ class KIProcedure;
 
 struct ControlNode
 {
-private:
+private:    
 	ros::Subscriber dronepose_sub;
 	ros::Publisher vel_pub;
 	ros::Subscriber tum_ardrone_sub;

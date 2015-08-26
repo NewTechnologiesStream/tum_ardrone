@@ -5,6 +5,14 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(tum_ardrone)
 
+# debug
+#SET (CMAKE_BUILD_TYPE Debug)
+#SET (ROS_BUILD_TYPE Debug)
+
+# release
+SET (CMAKE_BUILD_TYPE Release)
+SET (ROS_BUILD_TYPE Release)
+
 ## Find catkin macros and libraries
 find_package(catkin REQUIRED COMPONENTS
   ardrone_autonomy
@@ -54,6 +62,7 @@ add_service_files(
 	SetInitialReachDistance.srv
 	SetStayWithinDistance.srv
 	SetStayTime.srv
+        SendCommand.srv
 )
 
 ## Generate added messages 

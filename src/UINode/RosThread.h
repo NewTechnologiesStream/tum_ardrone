@@ -32,6 +32,7 @@
 #include "sensor_msgs/Joy.h"
 #include "std_srvs/Empty.h"
 #include "std_msgs/Empty.h"
+#include "tum_ardrone/SendCommand.h"
 
 class tum_ardrone_gui;
 
@@ -77,8 +78,9 @@ private:
 	ros::Subscriber land_sub;
 	ros::Subscriber toggleState_sub;
 
+    ros::ServiceServer sendCommand_srv;
 
-	ros::NodeHandle nh_;
+    ros::NodeHandle nh_;
 
 	// counters for Hz
 	unsigned int dronePoseCount;
@@ -129,6 +131,9 @@ public:
 	void sendToggleCam();
 	void sendFlattrim();
     void sendResetMsg();
+
+    // service callback
+    bool sendCommand(tum_ardrone::SendCommand::Request& req, tum_ardrone::SendCommand::Response& res);
 };
 
 #endif /* __ROSTHREAD_H */
