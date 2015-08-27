@@ -178,7 +178,7 @@ void ControlNode::popNextCommand(const tum_ardrone::filter_stateConstPtr statePt
         if( (size_t)(p = command.find("$POSE_0$")) != std::string::npos)
         {
             snprintf(buf, 100, "%.3f %.3f %.3f %.3f", statePtr->x, statePtr->y, statePtr->z, 0.0);
-            command.replace(p, 6, buf);
+            command.replace(p, 8, buf);
         }
         if( (size_t)(p = command.find("$REFERENCE$")) != std::string::npos)
 		{
