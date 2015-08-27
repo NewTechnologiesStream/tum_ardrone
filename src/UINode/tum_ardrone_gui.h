@@ -29,6 +29,7 @@
 #include "geometry_msgs/Twist.h"
 #include <dynamic_reconfigure/server.h>
 #include "tum_ardrone/GUIParamsConfig.h"
+#include "tum_ardrone/SendMission.h"
 
 class RosThread;
 class PingThread;
@@ -90,6 +91,9 @@ public:
     RosThread* rosThread;
     PingThread* pingThread;
 
+    ros::NodeHandle nh_;
+    bool sendMission(tum_ardrone::SendMission::Request& req, tum_ardrone::SendMission::Response& res);
+
     void setCounts(unsigned int nav,unsigned int control,unsigned int pose,unsigned int joy);
     void setPings(int p500, int p20000);
     void setControlSource(ControlSource cont);
@@ -115,6 +119,7 @@ protected:
     int mapKey(int k);
     bool isPressed[8];	//{j k l i u o q a}
     unsigned int lastRepeat[8];
+    ros::ServiceServer sendMission_srv;
 
 
 private:

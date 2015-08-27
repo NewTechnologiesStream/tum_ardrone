@@ -63,6 +63,7 @@ add_service_files(
 	SetStayWithinDistance.srv
 	SetStayTime.srv
         SendCommand.srv
+        SendMission.srv
 )
 
 ## Generate added messages 
