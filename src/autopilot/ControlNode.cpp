@@ -31,6 +31,7 @@
 #include "std_msgs/String.h"
 #include <sys/stat.h>
 #include <string>
+#include <boost/lexical_cast.hpp>
 
 // include KI's
 #include "KI/KIAutoInit.h"
@@ -214,20 +215,37 @@ void ControlNode::popNextCommand(const tum_ardrone::filter_stateConstPtr statePt
 		{
 			parameter_referenceZero = DronePosition(TooN::makeVector(parameters[0],parameters[1],parameters[2]),parameters[3]);
 			commandUnderstood = true;
+
+            std::ostringstream buffer;
+            buffer <<
+                    "u l Autopilot: Reference Frame set to: (x: " << parameters[0] <<
+                    ", y: " << parameters[1] <<
+                    ", z: " << parameters[2] <<
+                    ", yaw: " << parameters[3] << " )";
+            publishCommand(buffer.str().c_str());
 		}
+
 
 		// setMaxControl
 		else if(sscanf(command.c_str(),"setMaxControl %f",&parameters[0]) == 1)
 		{
 			parameter_MaxControl = parameters[0];
 			commandUnderstood = true;
-		}
+
+            std::ostringstream buffer;
+            buffer <<  "u l Autopilot: Max Control set to: " << parameters[0];
+            publishCommand(buffer.str().c_str());
+        }
 
 		// setInitialReachDist
 		else if(sscanf(command.c_str(),"setInitialReachDist %f",&parameters[0]) == 1)
 		{
 			parameter_InitialReachDist = parameters[0];
 			commandUnderstood = true;
+
+            std::ostringstream buffer;
+            buffer << "u l Autopilot: Initial Reach Dist set to: " << parameters[0];
+            publishCommand(buffer.str().c_str());
 		}
 
 		// setStayWithinDist
@@ -235,6 +253,10 @@ void ControlNode::popNextCommand(const tum_ardrone::filter_stateConstPtr statePt
 		{
 			parameter_StayWithinDist = parameters[0];
 			commandUnderstood = true;
+
+            std::ostringstream buffer;
+            buffer << "u l Autopilot: Stay Within Dist set to: " << parameters[0];
+            publishCommand(buffer.str().c_str());
 		}
 
 		// setStayTime
@@ -242,6 +264,10 @@ void ControlNode::popNextCommand(const tum_ardrone::filter_stateConstPtr statePt
 		{
 			parameter_StayTime = parameters[0];
 			commandUnderstood = true;
+
+            std::ostringstream buffer;
+            buffer << "u l Autopilot: Stay Time set to: " << parameters[0];
+            publishCommand(buffer.str().c_str());
 		}
 
 		// goto
@@ -557,6 +583,15 @@ bool ControlNode::setReference(SetReference::Request& req, SetReference::Respons
 	ROS_INFO("calling service setReference");
 	parameter_referenceZero = DronePosition(TooN::makeVector(req.x, req.y, req.z), req.heading);
 	res.status = true;
+
+    std::string msg =
+            "u l Autopilot: Reference Frame set to: (x: "
+            + boost::lexical_cast<std::string>(req.x) +
+            " y: "+ boost::lexical_cast<std::string>(req.y) +
+            " z: "+ boost::lexical_cast<std::string>(req.z) +
+            " Yaw: "+  boost::lexical_cast<std::string>(req.heading) +" )";
+    publishCommand(msg.c_str());
+
 	return true;
 }
 
