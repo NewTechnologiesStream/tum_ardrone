@@ -34,7 +34,7 @@ struct HomographyDecomposition
   Matrix<3> m3Rp;
   double d;
   Vector<3> v3n;
-  
+
   // The resolved composition..
   SE3<> se3SecondFromFirst;
   int nScore;
@@ -50,17 +50,15 @@ protected:
   void DecomposeHomography();
   void ChooseBestDecomposition();
   void RefineHomographyWithInliers();
-  
+
   bool IsHomographyInlier(Matrix<3> m3Homography, HomographyMatch match);
   double MLESACScore(Matrix<3> m3Homography, HomographyMatch match);
-  
+
   double mdMaxPixelErrorSquared;
   Matrix<3> mm3BestHomography;
   std::vector<HomographyMatch> mvMatches;
   std::vector<HomographyMatch> mvHomographyInliers;
   std::vector<HomographyDecomposition> mvDecompositions;
 };
-
-
 
 #endif

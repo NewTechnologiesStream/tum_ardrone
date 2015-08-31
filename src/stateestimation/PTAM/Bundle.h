@@ -56,13 +56,16 @@ struct OffDiagScriptEntry
 struct Point
 {
   inline Point()
-  { nMeasurements = 0; nOutliers = 0;}
+  {
+    nMeasurements = 0;
+    nOutliers = 0;
+  }
   Vector<3> v3Pos;
   Vector<3> v3PosNew;
   Matrix<3> m3V;          // Accumulator
   Vector<3> v3EpsilonB;   // Accumulator 
   Matrix<3> m3VStarInv;
-  
+
   int nMeasurements;
   int nOutliers;
   std::set<int> sCameras; // Which cameras observe this point?
@@ -74,25 +77,29 @@ struct Point
 struct Meas
 {
   inline Meas()
-  {bBad = false;}
-  
+  {
+    bBad = false;
+  }
+
   // Which camera/point did this measurement come from?
   int p; // The point  - called i in MVG
   int c; // The camera - called j in MVG
 
   inline bool operator<(const Meas &rhs) const
-  {  return(c<rhs.c ||(c==rhs.c && p < rhs.p)); }
-  
+  {
+    return (c < rhs.c || (c == rhs.c && p < rhs.p));
+  }
+
   bool bBad;
-  
+
   Vector<2> v2Found;
   Vector<2> v2Epsilon;
-  Matrix<2,6> m26A;
-  Matrix<2,3> m23B;
-  Matrix<6,3> m63W; 
-  Matrix<6,3> m63Y;
+  Matrix<2, 6> m26A;
+  Matrix<2, 3> m23B;
+  Matrix<6, 3> m63W;
+  Matrix<6, 3> m63Y;
   double dSqrtInvNoise;
-  
+
   // Temporary projection quantities
   Vector<3> v3Cam;
   double dErrorSquared;
@@ -104,34 +111,39 @@ class Bundle
 {
 public:
 
-  Bundle(const ATANCamera &TCam);   // We need the camera model because we do full distorting projection in the bundle adjuster. Could probably get away with a linear approximation.
+  Bundle(const ATANCamera &TCam); // We need the camera model because we do full distorting projection in the bundle adjuster. Could probably get away with a linear approximation.
   int AddCamera(SE3<> se3CamFromWorld, bool bFixed); // Add a viewpoint. bFixed signifies that this one is not to be adjusted.
   int AddPoint(Vector<3> v3Pos);       // Add a map point.
   void AddMeas(int nCam, int nPoint, Vector<2> v2Pos, double dSigmaSquared); // Add a measurement
-  int Compute(bool *pbAbortSignal);    // Perform bundle adjustment. Aborts if *pbAbortSignal gets set to true. Returns number of accepted update iterations, or negative on error.
-  inline bool Converged() { return mbConverged;}  // Has bundle adjustment converged?
+  int Compute(bool *pbAbortSignal); // Perform bundle adjustment. Aborts if *pbAbortSignal gets set to true. Returns number of accepted update iterations, or negative on error.
+  inline bool Converged()
+  {
+    return mbConverged;
+  }  // Has bundle adjustment converged?
   Vector<3> GetPoint(int n);       // Point coords after adjustment
   SE3<> GetCamera(int n);            // Camera pose after adjustment
-  std::vector<std::pair<int,int> > GetOutlierMeasurements();  // Measurements flagged as outliers
+  std::vector<std::pair<int, int> > GetOutlierMeasurements();  // Measurements flagged as outliers
   std::set<int> GetOutliers();                                // Points flagged as outliers
-  
+
 protected:
 
   inline void ProjectAndFindSquaredError(Meas &meas); // Project a single point in a single view, compare to measurement
-  template<class MEstimator> bool Do_LM_Step(bool *pbAbortSignal);
-  template<class MEstimator> double FindNewError();
+  template<class MEstimator>
+    bool Do_LM_Step(bool *pbAbortSignal);
+  template<class MEstimator>
+    double FindNewError();
   void GenerateMeasLUTs();
   void GenerateOffDiagScripts();
   void ClearAccumulators(); // Zero temporary quantities stored in cameras and points
   void ModifyLambda_GoodStep();
   void ModifyLambda_BadStep();
-  
+
   std::vector<Point> mvPoints;
   std::vector<Camera> mvCameras;
   std::list<Meas> mMeasList;
-  std::vector<std::pair<int,int> > mvOutlierMeasurementIdx;  // p-c pair
+  std::vector<std::pair<int, int> > mvOutlierMeasurementIdx;  // p-c pair
   std::vector<std::vector<Meas*> > mvMeasLUTs;  //Each camera gets a per-point table of pointers to valid measurements
-  
+
   ATANCamera mCamera;
   int mnCamsToUpdate;
   int mnStartRow;
@@ -142,16 +154,12 @@ protected:
   bool mbHitMaxIterations;
   int mnCounter;
   int mnAccepted;
-  
+
   GVars3::gvar3<int> mgvnMaxIterations;
   GVars3::gvar3<double> mgvdUpdateConvergenceLimit;
   GVars3::gvar3<int> mgvnBundleCout;
-  
+
   bool *mpbAbortSignal;
 };
-
-
-
-
 
 #endif

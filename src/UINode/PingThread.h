@@ -1,5 +1,5 @@
 #pragma once
- /**
+/**
  *  This file is part of tum_ardrone.
  *
  *  Copyright 2012 Jakob Engel <jajuengel@gmail.com> (Technical University of Munich)
@@ -21,56 +21,52 @@
 #ifndef __PINGTHREAD_H
 #define __PINGTHREAD_H
 
-
 #include "cvd/thread.h"
 #include <string>
-
 
 class tum_ardrone_gui;
 class RosThread;
 
-
 class PingThread : private CVD::Thread
 {
 private:
-	// the associated thread's run function.
-	void run();
+  // the associated thread's run function.
+  void run();
 
-	// keep Running
-	bool keepRunning;
-    bool started;
+  // keep Running
+  bool keepRunning;
+  bool started;
 
-	// buffers
-    char pingCommand500[100];
-    char pingCommand20000[100];
-    char line1[200];
-    char line2[200];
-    std::string ip;
+  // buffers
+  char pingCommand500[100];
+  char pingCommand20000[100];
+  char line1[200];
+  char line2[200];
+  std::string ip;
 
+  // running averages
+  double p500;
+  double p20000;
 
-    // running averages
-    double p500;
-    double p20000;
-
-    static const double p500Default = 25;
-    static const double p20000Default = 50;
+  static const double p500Default = 25;
+  static const double p20000Default = 50;
 public:
-	PingThread(void);
-	~PingThread(void);
+  PingThread(void);
+  ~PingThread(void);
 
-	// start and stop system and respective thread.
-	// to be called externally
-	void startSystem();
-	void stopSystem();
+  // start and stop system and respective thread.
+  // to be called externally
+  void startSystem();
+  void stopSystem();
 
-	void setIp(std::string);
+  void setIp(std::string);
 
-	// start and stop pinging
-	void setEnabled(bool);
+  // start and stop pinging
+  void setEnabled(bool);
 
-	tum_ardrone_gui* gui;
-	RosThread* rosThread;
-	bool measure;
+  tum_ardrone_gui* gui;
+  RosThread* rosThread;
+  bool measure;
 };
 
 #endif /* __PINGTHREAD_H */

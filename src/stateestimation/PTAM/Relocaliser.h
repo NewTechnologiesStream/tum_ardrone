@@ -16,14 +16,13 @@
 
 #include "Map.h"
 
-
 class Relocaliser
 {
 public:
   Relocaliser(Map &map, ATANCamera &camera);
   bool AttemptRecovery(KeyFrame &k);
   SE3<> BestPose();
-  
+
 protected:
   void ScoreKFs(KeyFrame &kCurrentF);
   Map &mMap;
@@ -35,12 +34,4 @@ protected:
 
 };
 #endif
-
-
-
-
-
-
-
-
 

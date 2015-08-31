@@ -1,4 +1,4 @@
- /**
+/**
  *  This file is part of tum_ardrone.
  *
  *  Copyright 2012 Jakob Engel <jajuengel@gmail.com> (Technical University of Munich)
@@ -28,140 +28,148 @@
 
 PingThread::PingThread()
 {
-	line1[0] = '\0';
-	line2[0] = '\0';
-	keepRunning = true;
-	started = false;
-	measure = true;
-    ip = std::string("");
+  line1[0] = '\0';
+  line2[0] = '\0';
+  keepRunning = true;
+  started = false;
+  measure = true;
+  ip = std::string("");
 
-	p500 = 25;
-	p20000 = 50;
+  p500 = 25;
+  p20000 = 50;
 
-	rosThread = NULL;
-	gui = NULL;
+  rosThread = NULL;
+  gui = NULL;
 }
 
 PingThread::~PingThread(void)
 {
 
-
 }
 
 void PingThread::startSystem()
 {
-	keepRunning = true;
-	start();
+  keepRunning = true;
+  start();
 }
 
 void PingThread::stopSystem()
 {
-	keepRunning = false;
-	join();
+  keepRunning = false;
+  join();
 }
 
 void PingThread::setIp(std::string newip)
 {
-    bool wasRunning = started;
-    if (wasRunning)
-        stopSystem();
+  bool wasRunning = started;
+  if (wasRunning)
+    stopSystem();
 
-    ip = newip;
+  ip = newip;
 
-    if (wasRunning)
-        startSystem();
+  if (wasRunning)
+    startSystem();
 }
 
 double parsePingResult(std::string s)
 {
-	// 20008 bytes from localhost (127.0.0.1): icmp_req=1 ttl=64 time=0.075 ms
-	size_t pos = s.find("time=");
-	int found = 0;
-	float ms;
-	if(pos != std::string::npos)
-		found = sscanf(s.substr(pos).c_str(),"time=%f",&ms);
+  // 20008 bytes from localhost (127.0.0.1): icmp_req=1 ttl=64 time=0.075 ms
+  size_t pos = s.find("time=");
+  int found = 0;
+  float ms;
+  if (pos != std::string::npos)
+    found = sscanf(s.substr(pos).c_str(), "time=%f", &ms);
 
-	if(found == 1 && pos != std::string::npos)
-		return ms;
-	else
-		return 10000;
+  if (found == 1 && pos != std::string::npos)
+    return ms;
+  else
+    return 10000;
 }
 
 void PingThread::run()
 {
-	std::cout << "Starting PING Thread" << std::endl;
-    started = true;
-	sprintf(pingCommand20000,"ping -c 1 -s 20000 -w 1 %s", ip.c_str());
-	sprintf(pingCommand500,"ping -c 1 -s 500 -w 1 %s", ip.c_str());
-	ros::Rate r(2.0);
-	FILE *p;
+  std::cout << "Starting PING Thread" << std::endl;
+  started = true;
+  sprintf(pingCommand20000, "ping -c 1 -s 20000 -w 1 %s", ip.c_str());
+  sprintf(pingCommand500, "ping -c 1 -s 500 -w 1 %s", ip.c_str());
+  ros::Rate r(2.0);
+  FILE *p;
 
-	while(keepRunning)
-	{
-		if(measure)
-		{
-			// ping twice, with a sleep in between
-			p = popen(pingCommand500,"r");
-			fgets(line1, 200, p);
-			fgets(line1, 200, p);
-			pclose(p);
+  while (keepRunning)
+  {
+    if (measure)
+    {
+      // ping twice, with a sleep in between
+      p = popen(pingCommand500, "r");
+      fgets(line1, 200, p);
+      fgets(line1, 200, p);
+      pclose(p);
 
-			// sleep 1s
-			r.sleep();
-			if(!keepRunning) break;
-			r.sleep();
-			if(!keepRunning) break;
+      // sleep 1s
+      r.sleep();
+      if (!keepRunning)
+        break;
+      r.sleep();
+      if (!keepRunning)
+        break;
 
+      p = popen(pingCommand20000, "r");
+      fgets(line2, 200, p);
+      fgets(line2, 200, p);
+      pclose(p);
 
+      // parse results which should be in line1 and line2
+      double res500 = parsePingResult(line1);
+      double res20000 = parsePingResult(line2);
 
-			p = popen(pingCommand20000,"r");
-			fgets(line2, 200, p);
-			fgets(line2, 200, p);
-			pclose(p);
+      std::cout << "new ping values: 500->" << res500 << " 20000->" << res20000 << std::endl;
 
+      // clip between 10 and 1000.
+      res500 = std::min(1000.0, std::max(1.0, res500));
+      res20000 = std::min(1000.0, std::max(1.0, res20000));
 
-			// parse results which should be in line1 and line2
-			double res500 = parsePingResult(line1);
-			double res20000 = parsePingResult(line2);
+      // update
+      p500 = 0.7 * p500 + 0.3 * res500;
+      p20000 = 0.7 * p20000 + 0.3 * res20000;
 
-			std::cout << "new ping values: 500->" << res500 << " 20000->" << res20000 << std::endl;
+      // send
+      snprintf(line1, 200, "pings %d %d", (int)p500, (int)p20000);
+      if (rosThread != NULL)
+        rosThread->publishCommand(line1);
+      if (gui != NULL)
+        gui->setPings((int)p500, (int)p20000);
 
-			// clip between 10 and 1000.
-			res500 = std::min(1000.0,std::max(1.0,res500));
-			res20000 = std::min(1000.0,std::max(1.0,res20000));
+      // sleep 1s
+      r.sleep();
+      if (!keepRunning)
+        break;
+      r.sleep();
+      if (!keepRunning)
+        break;
+    }
+    else
+    {
+      r.sleep();
+      if (!keepRunning)
+        break;
+      r.sleep();
+      if (!keepRunning)
+        break;
+      r.sleep();
+      if (!keepRunning)
+        break;
+      r.sleep();
+      if (!keepRunning)
+        break;
 
-			// update
-			p500 = 0.7 * p500 + 0.3 * res500;
-			p20000 = 0.7 * p20000 + 0.3 * res20000;
+      // send
+      snprintf(line1, 200, "pings %d %d", (int)p500Default, (int)p20000Default);
+      if (rosThread != NULL)
+        rosThread->publishCommand(line1);
+      if (gui != NULL)
+        gui->setPings((int)p500Default, (int)p20000Default);
+    }
+  }
 
-			// send
-			snprintf(line1,200,"pings %d %d", (int)p500, (int)p20000);
-			if(rosThread != NULL) rosThread->publishCommand(line1);
-			if(gui != NULL) gui->setPings((int)p500, (int)p20000);
-
-			// sleep 1s
-			r.sleep();
-			if(!keepRunning) break;
-			r.sleep();
-			if(!keepRunning) break;
-		}
-		else
-		{
-			r.sleep();
-			if(!keepRunning) break;
-			r.sleep();
-			if(!keepRunning) break;
-			r.sleep();
-			if(!keepRunning) break;
-			r.sleep();
-			if(!keepRunning) break;
-
-			// send
-			snprintf(line1,200,"pings %d %d", (int)p500Default, (int)p20000Default);
-			if(rosThread != NULL) rosThread->publishCommand(line1);
-			if(gui != NULL) gui->setPings((int)p500Default, (int)p20000Default);
-		}
-	}
-
-	std::cout << "Exiting PING Thread" << std::endl;
+  std::cout << "Exiting PING Thread" << std::endl;
 }

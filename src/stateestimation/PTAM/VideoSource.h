@@ -20,12 +20,12 @@ struct VideoSourceData;
 
 class VideoSource
 {
- public:
+public:
   VideoSource();
   void GetAndFillFrameBWandRGB(CVD::Image<CVD::byte> &imBW, CVD::Image<CVD::Rgb<CVD::byte> > &imRGB);
   CVD::ImageRef Size();
-  
- private:
+
+private:
   void *mptr;
   CVD::ImageRef mirSize;
 };

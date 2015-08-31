@@ -1,4 +1,4 @@
- /**
+/**
  *  This file is part of tum_ardrone.
  *
  *  Copyright 2012 Jakob Engel <jajuengel@gmail.com> (Technical University of Munich)
@@ -17,17 +17,15 @@
  *  You should have received a copy of the GNU General Public License
  *  along with tum_ardrone.  If not, see <http://www.gnu.org/licenses/>.
  */
- 
+
 #include "EstimationNode.h"
 #include "ros/ros.h"
 #include "PTAMWrapper.h"
 #include "MapView.h"
 
-
 // this global var is used in getMS(ros::Time t) to convert to a consistent integer timestamp used internally pretty much everywhere.
 // kind of an artifact from Windows-Version, where only that was available / used.
 unsigned int ros_header_timestamp_base = 0;
-
 
 int main(int argc, char **argv)
 {

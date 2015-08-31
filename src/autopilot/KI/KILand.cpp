@@ -1,4 +1,4 @@
- /**
+/**
  *  This file is part of tum_ardrone.
  *
  *  Copyright 2012 Jakob Engel <jajuengel@gmail.com> (Technical University of Munich)
@@ -22,13 +22,11 @@
 #include "../DroneController.h"
 #include "../ControlNode.h"
 
-
 KILand::KILand(void)
 {
-	fresh = true;
-	command = "land";
+  fresh = true;
+  command = "land";
 }
-
 
 KILand::~KILand(void)
 {
@@ -36,15 +34,15 @@ KILand::~KILand(void)
 
 bool KILand::update(const tum_ardrone::filter_stateConstPtr statePtr)
 {
-	if(fresh)
-	{
-		node->sendLand();
-		printf("issuing land!\n");
-	}
-	fresh = false;
+  if (fresh)
+  {
+    node->sendLand();
+    printf("issuing land!\n");
+  }
+  fresh = false;
 
-	// TODO: maybe do something better here, like still controlling x, y, yaw pos...
-	node->sendControlToDrone(node->hoverCommand);
-	controller->clearTarget();
-	return true;
+  // TODO: maybe do something better here, like still controlling x, y, yaw pos...
+  node->sendControlToDrone(node->hoverCommand);
+  controller->clearTarget();
+  return true;
 }

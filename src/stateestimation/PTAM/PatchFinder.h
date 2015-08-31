@@ -50,7 +50,7 @@ class PatchFinder
 public:
   // Constructor defines size of search patch.
   PatchFinder(int nPatchSize = 8);
-  
+
   // Step 1 Function.
   // This calculates the warping matrix appropriate for observing point p
   // from the current view (described as an SE3.) This also needs the camera
@@ -59,9 +59,15 @@ public:
   // returned as an int. Negative level returned denotes an inappropriate 
   // transformation.
   int CalcSearchLevelAndWarpMatrix(MapPoint &p, SE3<> se3CFromW, Matrix<2> &m2CamDerivs);
-  inline int GetLevel() { return mnSearchLevel; }
-  inline int GetLevelScale() { return LevelScale(mnSearchLevel); }
-  
+  inline int GetLevel()
+  {
+    return mnSearchLevel;
+  }
+  inline int GetLevelScale()
+  {
+    return LevelScale(mnSearchLevel);
+  }
+
   // Step 2 Functions
   // Generates the NxN search template either from the pre-calculated warping matrix,
   // or an identity transformation.
@@ -72,55 +78,71 @@ public:
 
   // If the template making failed (i.e. it needed pixels outside the source image),
   // this bool will return false.
-  inline bool TemplateBad()      { return mbTemplateBad;} 
-  
+  inline bool TemplateBad()
+  {
+    return mbTemplateBad;
+  }
+
   // Step 3 Functions
   // This is the raison d'etre of the class: finds the patch in the current input view,
   // centered around ir, Searching around FAST corner locations only within a radius nRange only.
   // Inputs are given in level-zero coordinates! Returns true if the patch was found.
-  bool FindPatchCoarse(CVD::ImageRef ir, KeyFrame &kf, unsigned int nRange);  
+  bool FindPatchCoarse(CVD::ImageRef ir, KeyFrame &kf, unsigned int nRange);
   int ZMSSDAtPoint(CVD::BasicImage<CVD::byte> &im, const CVD::ImageRef &ir); // This evaluates the score at one location
   // Results from step 3:
   // All positions are in the scale of level 0.
-  inline CVD::ImageRef GetCoarsePos() { return CVD::ImageRef((int) mv2CoarsePos[0], (int) mv2CoarsePos[1]);} 
-  inline Vector<2> GetCoarsePosAsVector() { return mv2CoarsePos; }
-  
+  inline CVD::ImageRef GetCoarsePos()
+  {
+    return CVD::ImageRef((int)mv2CoarsePos[0], (int)mv2CoarsePos[1]);
+  }
+  inline Vector<2> GetCoarsePosAsVector()
+  {
+    return mv2CoarsePos;
+  }
+
   // Step 4
   void MakeSubPixTemplate();  // Generate the inverse composition template and jacobians
-  
+
   // Step 5 Functions
   bool IterateSubPixToConvergence(KeyFrame &kf, int nMaxIts);  // Run inverse composition till convergence
-  double IterateSubPix(KeyFrame &kf);     // Single iteration of IC. Returns sum-squared pixel update dist, or negative if out of imag
-  inline Vector<2> GetSubPixPos()  { return mv2SubPixPos;   }  // Get result
-  void SetSubPixPos(Vector<2> v2)  { mv2SubPixPos = v2;     }  // Set starting point
-  
+  double IterateSubPix(KeyFrame &kf); // Single iteration of IC. Returns sum-squared pixel update dist, or negative if out of imag
+  inline Vector<2> GetSubPixPos()
+  {
+    return mv2SubPixPos;
+  }  // Get result
+  void SetSubPixPos(Vector<2> v2)
+  {
+    mv2SubPixPos = v2;
+  }  // Set starting point
+
   // Get the uncertainty estimate of a found patch;
   // This for just returns an appropriately-scaled identity!
   inline Matrix<2> GetCov()
   {
     return LevelScale(mnSearchLevel) * Identity;
-  };
-  
+  }
+  ;
+
   int mnMaxSSD; // This is the max ZMSSD for a valid match. It's set in the constructor.
 
 protected:
- 
+
   int mnPatchSize; // Size of one side of the matching template.
-  
+
   // Some values stored for the coarse template:
   int mnTemplateSum;    // Cached pixel-sum of the coarse template
   int mnTemplateSumSq;  // Cached pixel-squared sum of the coarse template
   inline void MakeTemplateSums(); // Calculate above values
-  
+
   CVD::Image<CVD::byte> mimTemplate;   // The matching template
-  CVD::Image<std::pair<float,float> > mimJacs;  // Inverse composition jacobians; stored as floats to save a bit of space.
-  
+  CVD::Image<std::pair<float, float> > mimJacs; // Inverse composition jacobians; stored as floats to save a bit of space.
+
   Matrix<2> mm2WarpInverse;   // Warping matrix
   int mnSearchLevel;          // Search level in input pyramid
   Matrix<3> mm3HInv;          // Inverse composition JtJ^-1
   Vector<2> mv2SubPixPos;     // In the scale of level 0
   double mdMeanDiff;          // Updated during inverse composition
-  
+
   CVD::ImageRef mirPredictedPos;  // Search center location of FindPatchCoarse in L0
   Vector<2> mv2CoarsePos;     // In the scale of level 0; hence the use of vector rather than ImageRef
   CVD::ImageRef mirCenter;    // Quantized location of the center pixel of the NxN pixel template
@@ -133,11 +155,4 @@ protected:
 };
 
 #endif
-
-
-
-
-
-
-
 
