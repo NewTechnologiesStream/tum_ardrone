@@ -64,17 +64,25 @@ EstimationNode::EstimationNode()
 
   ros::param::get("~publishFreq", val);
   if (val.size() > 0)
+  {
     sscanf(val.c_str(), "%f", &valFloat);
+  }
   else
+  {
     valFloat = 30;
+  }
   publishFreq = valFloat;
   cout << "set publishFreq to " << valFloat << "Hz" << endl;
 
   ros::param::get("~calibFile", calibFile);
   if (calibFile.size() > 0)
+  {
     cout << "set calibFile to " << calibFile << endl;
+  }
   else
+  {
     cout << "set calibFile to DEFAULT" << endl;
+  }
 
   navdata_sub = nh_.subscribe(navdata_channel, 10, &EstimationNode::navdataCb, this);
   vel_sub = nh_.subscribe(control_channel, 10, &EstimationNode::velCb, this);
@@ -119,7 +127,9 @@ void EstimationNode::navdataCb(const ardrone_autonomy::NavdataConstPtr navdataPt
 {
   lastNavdataReceived = *navdataPtr;
   if (ros::Time::now() - lastNavdataReceived.header.stamp > ros::Duration(30.0))
+  {
     lastNavdataReceived.header.stamp = ros::Time::now();
+  }
 
   if (arDroneVersion == 0)
   {
@@ -135,7 +145,9 @@ void EstimationNode::navdataCb(const ardrone_autonomy::NavdataConstPtr navdataPt
   long droneTS = navdataPtr->tm / 1000;
 
   if (lastDroneTS == 0)
+  {
     lastDroneTS = droneTS;
+  }
 
   if ((droneTS + 1000000) < lastDroneTS)
   {
@@ -143,7 +155,9 @@ void EstimationNode::navdataCb(const ardrone_autonomy::NavdataConstPtr navdataPt
     ROS_WARN("Drone Navdata timestamp overflow! (should happen epprox every 30min, while drone switched on)");
   }
   else
+  {
     droneRosTSOffset = 0.9 * droneRosTSOffset + 0.1 * (rosTS - droneTS);
+  }
 
   long rosTSNew = droneTS + droneRosTSOffset;	// this should be the correct timestamp.
   long TSDiff = std::min(100l, std::max(-100l, rosTSNew - rosTS));	// never change by more than 100ms.
@@ -169,9 +183,11 @@ void EstimationNode::navdataCb(const ardrone_autonomy::NavdataConstPtr navdataPt
 
   // save last timestamp
   if (lastNavStamp != ros::Time(0) && (lastNavdataReceived.header.stamp - lastNavStamp > ros::Duration(0.1)))
+  {
     std::cout << (lastNavdataReceived.header.stamp - lastNavStamp).toSec()
         << "s between two consecutive navinfos. This system requires Navinfo at 200Hz. If this error persists, set drone to debug mode and change publish freq in ardrone_autonomy"
         << std::endl;
+  }
   lastNavStamp = lastNavdataReceived.header.stamp;
 
   if (logfileIMU != NULL)
@@ -179,12 +195,14 @@ void EstimationNode::navdataCb(const ardrone_autonomy::NavdataConstPtr navdataPt
     int pingNav = 0, pingVid = 0;
     pthread_mutex_lock(&logIMU_CS);
     if (logfileIMU != NULL)
+    {
       (*logfileIMU) << getMS(lastNavdataReceived.header.stamp) << " " << lastNavdataReceived.tm << " "
           << lastNavdataReceived.vx << " " << lastNavdataReceived.vy << " " << lastNavdataReceived.altd << " "
           << lastNavdataReceived.rotX / 1000.0 << " " << lastNavdataReceived.rotY / 1000.0 << " "
           << lastNavdataReceived.rotZ / 1000.0 << " " << lastNavdataReceived.pressure << " " << 0 << " " << 0 << " "
           << 0 << " " <<	// control: roll pitch gaz yaw.
-          pingNav << " " << pingVid << "\n";
+          pingNav << " " << pingVid << std::endl;
+    }
     pthread_mutex_unlock(&logIMU_CS);
   }
 
@@ -303,7 +321,9 @@ void EstimationNode::Loop()
     // if PTAM updates hang (no video or e.g. init), filter is never permanently rolled forward -> queues get too big.
     // dont allow this to happen by faking a ptam observation if queue gets too big (500ms = 100 observations)
     if ((getMS(ros::Time().now()) - filter->predictdUpToTimestamp) > 500)
+    {
       filter->addFakePTAMObservation(getMS(ros::Time().now()) - 300);
+    }
 
     // ---------- maybe send new info --------------------------
     if ((ros::Time::now() - lastInfoSent) > ros::Duration(0.4))
@@ -319,10 +339,14 @@ void EstimationNode::Loop()
 void EstimationNode::dynConfCb(tum_ardrone::StateestimationParamsConfig &config, uint32_t level)
 {
   if (!filter->allSyncLocked && config.PTAMSyncLock)
+  {
     ROS_WARN("Ptam Sync has been disabled. This fixes scale etc.");
+  }
 
   if (!ptamWrapper->mapLocked && config.PTAMMapLock)
+  {
     ROS_WARN("Ptam Map has been locked.");
+  }
 
   filter->useControl = config.UseControlGains;
   filter->usePTAM = config.UsePTAM;
@@ -394,9 +418,11 @@ void EstimationNode::publishTf(TooN::SE3<> trans, ros::Time stamp, int seq, std:
     // - predictedPoseSpeed estimated for lastNfoTimestamp+filter->delayControl	(actually predicting)
     // - predictedPoseSpeedATLASTNFO estimated for lastNfoTimestamp	(using imu only)
     if (logfilePTAMRaw != NULL)
+    {
       (*(logfilePTAMRaw)) << seq << " " << stamp << " " << tr.getOrigin().x() << " " << tr.getOrigin().y() << " "
           << tr.getOrigin().z() << " " << tr.getRotation().x() << " " << tr.getRotation().y() << " "
           << tr.getRotation().z() << " " << tr.getRotation().w() << std::endl;
+    }
 
     pthread_mutex_unlock(&(logPTAMRaw_CS));
   }
@@ -408,7 +434,9 @@ void EstimationNode::toogleLogging()
   // first: always check for /log dir
   struct stat st;
   if (stat((packagePath + std::string("/logs")).c_str(), &st) != 0)
+  {
     mkdir((packagePath + std::string("/logs")).c_str(), S_IXGRP | S_IXOTH | S_IXUSR | S_IRWXU | S_IRWXG | S_IROTH);
+  }
 
   char buf[200];
   bool quitLogging = false;
@@ -424,7 +452,9 @@ void EstimationNode::toogleLogging()
     publishCommand(buf);
   }
   else
+  {
     quitLogging = true;
+  }
 
   // IMU
   pthread_mutex_lock(&logIMU_CS);
@@ -539,14 +569,20 @@ void EstimationNode::reSendInfo()
   size_t pos = ptamMsg.find("Found: ");
   int found = 0;
   if (pos != std::string::npos)
+  {
     found = sscanf(ptamMsg.substr(pos).c_str(), "Found: %d/%d %d/%d %d/%d %d/%d Map: %dP, %dKF", &kpf[0], &kps[0],
                    &kpf[1], &kps[1], &kpf[2], &kps[2], &kpf[3], &kps[3], &kp, &kf);
+  }
   char bufp[200];
   if (found == 10)
+  {
     snprintf(bufp, 200, "Map: KF: %d, KP: %d (%d of %d found)", kf, kp, kpf[0] + kpf[1] + kpf[2] + kpf[3],
              kps[0] + kps[1] + kps[2] + kps[3]);
+  }
   else
+  {
     snprintf(bufp, 200, "Map: -");
+  }
 
   std::string status = "";
   switch (lastNavdataReceived.state)

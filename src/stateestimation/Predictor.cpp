@@ -113,30 +113,36 @@ void Predictor::predictOneStep(ardrone_autonomy::Navdata* nfo)
   double timespan = nfo->tm - lastAddedDronetime;	// in micros
   lastAddedDronetime = nfo->tm;
   if (timespan > 50000 || timespan < 1)
+  {
     timespan = std::max(0.0, std::min(5000.0, timespan));	// clamp strange values
+  }
 
   // horizontal speed integration
   // (mm / s)/1.000 * (mics/1.000.000) = meters.
   double dxDrone = nfo->vx * timespan / 1000000000;	// in meters
   double dyDrone = nfo->vy * timespan / 1000000000;	// in meters
 
-  double yawRad = (nfo->rotZ / 1000.0) * 3.1415 / 180.0;
+  double yawRad = (nfo->rotZ / 1000.0) * M_PI / 180.0;
   x += sin(yawRad) * dxDrone + cos(yawRad) * dyDrone;
   y += cos(yawRad) * dxDrone - sin(yawRad) * dyDrone;
 
   double alt = (nfo->altd * 0.001)
       / sqrt(
-          1.0 + (tan(nfo->rotX * 3.14159268 / 180) * tan(nfo->rotX * 3.14159268 / 180))
-              + (tan(nfo->rotY * 3.14159268 / 180) * tan(nfo->rotY * 3.14159268 / 180)));
+          1.0 + (tan(nfo->rotX * M_PI / 180) * tan(nfo->rotX * M_PI / 180))
+              + (tan(nfo->rotY * M_PI / 180) * tan(nfo->rotY * M_PI / 180)));
 
   if (!std::isfinite(alt))
+  {
     alt = nfo->altd * 0.001;
+  }
 
   // height
   if (abs(z - alt) > 0.12)
   {
     if (std::abs(z - alt) > abs(zCorruptedJump))
+    {
       zCorruptedJump = z - alt;
+    }
     zCorrupted = true;
   }
 

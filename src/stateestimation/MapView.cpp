@@ -101,7 +101,9 @@ void MapView::Render()
   // render
   bool addTrail;
   if (trailPoints.size() == 0)
+  {
     addTrail = true;
+  }
   else
   {
     TooN::Vector < 3 > distToLast = lastFramePoseSpeed.slice<0, 3>() - trailPoints[trailPoints.size() - 1].pointFilter;
@@ -243,7 +245,9 @@ void MapView::Render()
 
   CVD::glSetFont("sans");
   if (drawUI != UI_NONE)
+  {
     myGLWindow->DrawCaption(msg);
+  }
 
   if (drawUI == UI_DEBUG)
   {
@@ -290,8 +294,10 @@ void MapView::drawTrail()
       trailPoints[i].pointFilter += PTAMOffsets;
     }
     if (i > 1 && i < trailPoints.size() - 1)
+    {
       glVertex3f((float)trailPoints[i].pointFilter[0], (float)trailPoints[i].pointFilter[1],
                  (float)trailPoints[i].pointFilter[2]);
+    }
     glVertex3f((float)trailPoints[i].pointFilter[0], (float)trailPoints[i].pointFilter[1],
                (float)trailPoints[i].pointFilter[2]);
   }
@@ -362,7 +368,9 @@ void MapView::plotCam(TooN::SE3<> droneToGlobal, bool xyCross, float thick, floa
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   }
   else
+  {
     glDisable (GL_BLEND);
+  }
 
   glBegin (GL_LINES);
   glColor4f(1, 0, 0, alpha);
@@ -559,11 +567,17 @@ bool MapView::handleCommand(std::string s)
   if (s.length() == 8 && s.substr(0, 8) == "toggleUI")
   {
     if (drawUI == UI_NONE)
+    {
       drawUI = UI_DEBUG;
+    }
     else if (drawUI == UI_DEBUG)
+    {
       drawUI = UI_PRES;
+    }
     else if (drawUI == UI_PRES)
+    {
       drawUI = UI_NONE;
+    }
   }
   if (s.length() == 9 && s.substr(0, 9) == "resetView")
   {

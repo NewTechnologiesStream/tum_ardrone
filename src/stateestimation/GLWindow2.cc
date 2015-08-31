@@ -139,7 +139,9 @@ void GLWindow2::PrintString(CVD::ImageRef irPos, std::string s)
 void GLWindow2::DrawCaption(string s)
 {
   if (s.length() == 0)
+  {
     return;
+  }
 
   SetupWindowOrtho();
   // Find out how many lines are in the caption:
@@ -153,9 +155,13 @@ void GLWindow2::DrawCaption(string s)
       nLines++;
       st = s.find(sendl, st);
       if (st == string::npos)
+      {
         break;
+      }
       else
+      {
         st++;
+      }
     }
   }
 
@@ -188,17 +194,17 @@ void GLWindow2::on_mouse_move(GLWindow& win, CVD::ImageRef where, int state)
   mirLastMousePos = where;
 
   double dSensitivity = 0.01;
-  if (state & BUTTON_LEFT && !(state & BUTTON_RIGHT))
+  if ((state & BUTTON_LEFT) && !(state & BUTTON_RIGHT))
   {
     mvMCPoseUpdate[3] -= irMotion[1] * dSensitivity;
     mvMCPoseUpdate[4] += irMotion[0] * dSensitivity;
   }
-  else if (!(state & BUTTON_LEFT) && state & BUTTON_RIGHT)
+  else if (!(state & BUTTON_LEFT) && (state & BUTTON_RIGHT))
   {
     mvLeftPoseUpdate[4] -= irMotion[0] * dSensitivity;
     mvLeftPoseUpdate[3] += irMotion[1] * dSensitivity;
   }
-  else if (state & BUTTON_MIDDLE || (state & BUTTON_LEFT && state & BUTTON_RIGHT))
+  else if ((state & BUTTON_MIDDLE) || ((state & BUTTON_LEFT) && (state & BUTTON_RIGHT)))
   {
     mvLeftPoseUpdate[5] -= irMotion[0] * dSensitivity;
     mvLeftPoseUpdate[2] += irMotion[1] * dSensitivity;

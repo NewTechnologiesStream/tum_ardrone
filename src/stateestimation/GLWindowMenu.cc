@@ -128,9 +128,13 @@ void GLWindowMenu::GUICommandHandler(string sCommand, string sParams)
   if (sCommand == msName + ".ShowMenu")
   {
     if (vs.size() == 0)
+    {
       msCurrentSubMenu = "";
+    }
     else
+    {
       msCurrentSubMenu = vs[0];
+    }
   };
 
 }
@@ -160,7 +164,9 @@ void GLWindowMenu::FillBox(int l, int r, int t, int b)
 void GLWindowMenu::Render(int nTop, int nHeight, int nWidth, GLWindow2 &glw)
 {
   if (!*mgvnEnabled)
+  {
     return;
+  }
 
   mnWidth = nWidth;
   mnMenuTop = nTop;
@@ -195,14 +201,22 @@ void GLWindowMenu::Render(int nTop, int nHeight, int nWidth, GLWindow2 &glw)
 
       case Toggle:
         if (*(i->gvnIntValue))
+        {
           glColor4d(0, 0.5, 0.5, dAlpha);
+        }
         else
+        {
           glColor4d(0.5, 0, 0, dAlpha);
+        }
         FillBox(nBase, nBase + *mgvnMenuItemWidth + 1, mnMenuTop, mnMenuTop + mnMenuHeight);
         if (*(i->gvnIntValue))
+        {
           glColor4d(0, 1, 0.5, dAlpha);
+        }
         else
+        {
           glColor4d(1, 0, 0, dAlpha);
+        }
         LineBox(nBase, nBase + *mgvnMenuItemWidth + 1, mnMenuTop, mnMenuTop + mnMenuHeight);
         glw.PrintString(ImageRef(nBase + 3, mnMenuTop + *mgvnMenuTextOffset),
                         i->sName + " " + ((*(i->gvnIntValue)) ? ("On") : ("Off")));
@@ -224,9 +238,13 @@ void GLWindowMenu::Render(int nTop, int nHeight, int nWidth, GLWindow2 &glw)
         glColor4d(0.5, 0.0, 0.5, dAlpha);
         double dFrac = (double)(*(i->gvnIntValue) - i->min) / (i->max - i->min);
         if (dFrac < 0.0)
+        {
           dFrac = 0.0;
+        }
         if (dFrac > 1.0)
+        {
           dFrac = 1.0;
+        }
         FillBox(nBase, (int)(nBase + dFrac * (*mgvnMenuItemWidth + 1)), mnMenuTop, mnMenuTop + mnMenuHeight);
         glColor4d(0, 1, 1, dAlpha);
         LineBox(nBase, nBase + *mgvnMenuItemWidth + 1, mnMenuTop, mnMenuTop + mnMenuHeight);
@@ -244,21 +262,31 @@ void GLWindowMenu::Render(int nTop, int nHeight, int nWidth, GLWindow2 &glw)
   LineBox(mnWidth - *mgvnMenuItemWidth, mnWidth - 1, mnMenuTop, mnMenuTop + mnMenuHeight);
   ImageRef ir(mnWidth - *mgvnMenuItemWidth + 5, mnMenuTop + *mgvnMenuTextOffset);
   if (msCurrentSubMenu == "Root")
+  {
     glw.PrintString(ir, msTitle + ":");
+  }
   else
+  {
     glw.PrintString(ir, msCurrentSubMenu + ":");
+  }
 }
 ;
 
 bool GLWindowMenu::HandleClick(int nMouseButton, int state, int x, int y)
 {
   if (!*mgvnEnabled)
+  {
     return false;
+  }
 
   if ((y < mnMenuTop) || (y > mnMenuTop + mnMenuHeight))
+  {
     return false;
+  }
   if (x < mnLeftMostCoord)
+  {
     return false;
+  }
 
   // if no menu displayed, then must display root menu!
   if (msCurrentSubMenu == "")
@@ -270,14 +298,20 @@ bool GLWindowMenu::HandleClick(int nMouseButton, int state, int x, int y)
   // Figure out which button was pressed:
   int nButtonNumber = (mnWidth - x) / *mgvnMenuItemWidth;
   if (nButtonNumber > (int)(mmSubMenus[msCurrentSubMenu].mvItems.size()))
+  {
     nButtonNumber = 0;
+  }
 
   if (nButtonNumber == 0) // Clicked on menu name .. . go to root.
   {
     if (msCurrentSubMenu == "Root")
+    {
       msCurrentSubMenu = "";
+    }
     else
+    {
       msCurrentSubMenu = "Root";
+    }
     return true;
   };
 
@@ -297,13 +331,17 @@ bool GLWindowMenu::HandleClick(int nMouseButton, int state, int x, int y)
       {
         *(SelectedItem.gvnIntValue) += 1;
         if (*(SelectedItem.gvnIntValue) > SelectedItem.max)
+        {
           *(SelectedItem.gvnIntValue) = SelectedItem.max;
+        }
       }
       else if (nMouseButton == GLWindow::BUTTON_WHEEL_DOWN)
       {
         *(SelectedItem.gvnIntValue) -= 1;
         if (*(SelectedItem.gvnIntValue) < SelectedItem.min)
+        {
           *(SelectedItem.gvnIntValue) = SelectedItem.min;
+        }
       }
       else
       {

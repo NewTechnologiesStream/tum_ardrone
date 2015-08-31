@@ -52,7 +52,9 @@ public:
 
     double tmp = (sII - sPP) * (sII - sPP) + 4 * sPI * sPI;
     if (tmp <= 0)
+    {
       tmp = 1e-5;	// numeric issues
+    }
     return 0.5 * ((sII - sPP) + sqrt(tmp)) / (stdDevPTAM * stdDevPTAM * spi);
 
   }

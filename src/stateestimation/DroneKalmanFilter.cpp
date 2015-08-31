@@ -61,9 +61,13 @@ using namespace std;
 double angleFromTo(double angle, double min, double sup)
 {
   while (angle < min)
+  {
     angle += 360;
+  }
   while (angle >= sup)
+  {
     angle -= 360;
+  }
   return angle;
 }
 
@@ -108,13 +112,13 @@ void DroneKalmanFilter::release()
 
 void DroneKalmanFilter::setPing(unsigned int navPing, unsigned int vidPing)
 {
-  // add a constant of 20ms // 40ms to accound for delay due to ros.
+  // add a constant of 20ms // 40ms to account for delay due to ros.
   // very, very rough approximation.
   navPing += 20;
   vidPing += 40;
 
   int new_delayXYZ = base_delayXYZ;
-  int new_delayVideo = base_delayVideo + vidPing / (int)2 - navPing / (int)2;
+  int new_delayVideo = base_delayVideo + vidPing / 2 - navPing / 2;
   int new_delayControl = base_delayControl + navPing;
 
   delayXYZ = std::min(500, std::max(40, std::min(new_delayVideo, new_delayXYZ)));
@@ -152,7 +156,7 @@ void DroneKalmanFilter::reset()
   predictdUpToTimestamp = getMS(ros::Time::now());
   predictedUpToTotal = -1;
 
-  baselineZ_Filter = baselineZ_IMU = -999999;
+  baselineZ_Filter = baselineZ_IMU = -DBL_MAX;
   baselinesYValid = false;
 
   node->publishCommand("u l EKF has been reset to zero.");
@@ -186,7 +190,9 @@ void DroneKalmanFilter::predictInternal(geometry_msgs::Twist activeControlInfo, 
                                         bool useControlGains)
 {
   if (timeSpanMicros <= 0)
+  {
     return;
+  }
 
   useControlGains = useControlGains && this->useControl;
 
@@ -204,9 +210,9 @@ void DroneKalmanFilter::predictInternal(geometry_msgs::Twist activeControlInfo, 
   float pitchControlGain = tsSeconds * c3 * (c4 * activeControlInfo.linear.x - pitch.state);
   float yawSpeedControlGain = tsSeconds * c5 * (c6 * activeControlInfo.angular.z - yaw.state[1]);	// at adaption to ros, this has to be reverted for some reason....
 
-  double yawRad = yaw.state[0] * 3.14159268 / 180;
-  double rollRad = roll.state * 3.14159268 / 180;
-  double pitchRad = pitch.state * 3.14159268 / 180;
+  double yawRad = yaw.state[0] * M_PI / 180;
+  double rollRad = roll.state * M_PI / 180;
+  double pitchRad = pitch.state * M_PI / 180;
 
   double vz_gain = tsSeconds * c7 * (c8 * activeControlInfo.linear.z - z.state[1]) * fabs(cos(rollRad) * cos(pitchRad));
 
@@ -253,7 +259,9 @@ void DroneKalmanFilter::observeIMU_XYZ(const ardrone_autonomy::Navdata* nav)
   double vy_global = (cos(yawRad) * nav->vx - sin(yawRad) * nav->vy) / 1000.0;
 
   if (vx_global > 10)
+  {
     cout << "err";
+  }
 
   // update x,y:
   // if PTAM isGood, assume "normal" accuracy. if not, assume very accurate speeds
@@ -287,7 +295,7 @@ void DroneKalmanFilter::observeIMU_XYZ(const ardrone_autonomy::Navdata* nav)
   if (!std::isfinite(z_obs))
     z_obs = nav->altd * 0.001;
 
-  if (baselineZ_Filter < -100000)	// only for initialization.
+  if (baselineZ_Filter <= -DBL_MAX)	// only for initialization.
   {
     baselineZ_IMU = z_obs;
     baselineZ_Filter = z.state[0];
@@ -326,7 +334,9 @@ void DroneKalmanFilter::observeIMU_XYZ(const ardrone_autonomy::Navdata* nav)
     {
       double speed = (z_obs - baselineZ_IMU) / ((getMS(nav->header.stamp) - lastIMU_XYZ_dronetime) / 1000.0);
       if (std::isfinite(speed))
+      {
         z.observeSpeed(speed, varPoseObservation_z_IMU * 10);
+      }
     }
 
   }
@@ -392,13 +402,17 @@ void DroneKalmanFilter::observeIMU_RPY(const ardrone_autonomy::Navdata* nav)
     {
       yaw.observePose(yaw.state[0] + imuYawDiff, 1 * 1);
       if (std::isfinite(observedYawSpeed))
+      {
         yaw.observeSpeed(observedYawSpeed, varSpeedObservation_yaw);
+      }
     }
     else
     {
       yaw.observePose(yaw.state[0] + imuYawDiff, 0.5 * 0.5);
       if (std::isfinite(observedYawSpeed))
+      {
         yaw.observeSpeed(observedYawSpeed, varSpeedObservation_yaw / 2);
+      }
 
     }
   }
@@ -461,10 +475,14 @@ void DroneKalmanFilter::observePTAM(TooN::Vector<6> pose)
 void DroneKalmanFilter::sync_rpy(double roll_global, double pitch_global, double yaw_global)
 {
   if (allSyncLocked)
+  {
     return;
+  }
   // set yaw on first call
   if (rp_offset_framesContributed < 1)
+  {
     yaw_offset = yaw.state[0] - yaw_global;
+  }
 
   // update roll and pitch offset continuously as normal average.
   if (rp_offset_framesContributed < 100)
@@ -481,7 +499,9 @@ void DroneKalmanFilter::sync_rpy(double roll_global, double pitch_global, double
 void DroneKalmanFilter::sync_xyz(double x_global, double y_global, double z_global)
 {
   if (allSyncLocked)
+  {
     return;
+  }
   // ----------- offset: just take first available ---------
   if (!offsets_xyz_initialized)
   {
@@ -498,8 +518,10 @@ void DroneKalmanFilter::flushScalePairs()
   std::ofstream* fle = new std::ofstream();
   fle->open("scalePairs.txt");
   for (unsigned int i = 0; i < scalePairs->size(); i++)
+  {
     (*fle) << (*scalePairs)[i].ptam[0] << " " << (*scalePairs)[i].ptam[1] << " " << (*scalePairs)[i].ptam[2] << " "
         << (*scalePairs)[i].imu[0] << " " << (*scalePairs)[i].imu[1] << " " << (*scalePairs)[i].imu[2] << std::endl;
+  }
   fle->flush();
   fle->close();
   delete fle;
@@ -508,13 +530,17 @@ void DroneKalmanFilter::flushScalePairs()
 void DroneKalmanFilter::updateScaleXYZ(TooN::Vector<3> ptamDiff, TooN::Vector<3> imuDiff, TooN::Vector<3> OrgPtamPose)
 {
   if (allSyncLocked)
+  {
     return;
+  }
 
   ScaleStruct s = ScaleStruct(ptamDiff, imuDiff);
 
   // dont add samples that are way to small...
   if (s.imuNorm < 0.05 || s.ptamNorm < 0.05)
+  {
     return;
+  }
 
   // update running sums
   (*scalePairs).push_back(s);
@@ -528,7 +554,9 @@ void DroneKalmanFilter::updateScaleXYZ(TooN::Vector<3> ptamDiff, TooN::Vector<3>
   // hack: if we have only few samples, median is unreliable (maybe 2 out of 3 are completely wrong.
   // so take first scale pair in this case (i.e. the initial scale)
   if ((*scalePairs).size() < 5)
+  {
     median = initialScaleSet;
+  }
 
   // find sums and median.
   // do separately for xy and z and xyz-all and xyz-filtered
@@ -606,9 +634,13 @@ void DroneKalmanFilter::updateScaleXYZ(TooN::Vector<3> ptamDiff, TooN::Vector<3>
   printf("sumPP: %.3f  sumII: %.3f  sumPI: %.3f\n", sumPP, sumII, sumPI);
 
   if (scale_Filtered > 0.1)
+  {
     z_scale = xy_scale = scale_Filtered;
+  }
   else
+  {
     ROS_WARN("calculated scale is too small %.3f, disallowing!", scale_Filtered);
+  }
 
   scale_from_xy = scale_Filtered_xy;
   scale_from_z = scale_Filtered_z;
@@ -638,7 +670,9 @@ float DroneKalmanFilter::getScaleAccuracy()
 void DroneKalmanFilter::predictUpTo(int timestamp, bool consume, bool useControlGains)
 {
   if (predictdUpToTimestamp == timestamp)
+  {
     return;
+  }
 
   //std::cout << (consume ? "per" : "tmp") << " pred @ " << this << ": " << predictdUpToTimestamp << " to " << timestamp << std::endl;
 
@@ -660,30 +694,42 @@ void DroneKalmanFilter::predictUpTo(int timestamp, bool consume, bool useControl
   std::deque<geometry_msgs::TwistStamped>::iterator controlIterator = velQueue->begin();
   while (controlIterator != velQueue->end() && controlIterator + 1 != velQueue->end()
       && getMS((controlIterator + 1)->header.stamp) <= predictdUpToTimestamp - delayControl)
+  {
     if (consume)
     {
       velQueue->pop_front();
       controlIterator = velQueue->begin();
     }
     else
+    {
       controlIterator++;
+    }
+  }
   if (velQueue->size() == 0)
+  {
     useControlGains = false;
+  }
 
   // dont delete here, it will be deleted if respective rpy data is consumed.
   std::deque<ardrone_autonomy::Navdata>::iterator xyzIterator = navdataQueue->begin();
   while (xyzIterator != navdataQueue->end() && getMS(xyzIterator->header.stamp) <= predictdUpToTimestamp + delayXYZ)
+  {
     xyzIterator++;
+  }
 
   std::deque<ardrone_autonomy::Navdata>::iterator rpyIterator = navdataQueue->begin();
   while (rpyIterator != navdataQueue->end() && getMS(rpyIterator->header.stamp) <= predictdUpToTimestamp + delayRPY)
+  {
     if (consume)
     {
       navdataQueue->pop_front();
       rpyIterator = navdataQueue->begin();
     }
     else
+    {
       rpyIterator++;
+    }
+  }
 
   // now, each iterator points to the first elemnent in queue that is to be integrated.
   // start predicting,
@@ -698,19 +744,29 @@ void DroneKalmanFilter::predictUpTo(int timestamp, bool consume, bool useControl
     // get three queues to the right point in time by rolling forward in them.
     // for xyz this is the first point at which its obs-time is bigger than or equal to [predictdUpToTimestamp]
     while (xyzIterator != navdataQueue->end() && getMS(xyzIterator->header.stamp) - delayXYZ < predictdUpToTimestamp)
+    {
       xyzIterator++;
+    }
     while (rpyIterator != navdataQueue->end() && getMS(rpyIterator->header.stamp) - delayRPY < predictdUpToTimestamp)
+    {
       rpyIterator++;
+    }
     // for control that is last message with stamp <= predictdUpToTimestamp - delayControl.
     while (controlIterator != velQueue->end() && controlIterator + 1 != velQueue->end()
         && getMS((controlIterator + 1)->header.stamp) + delayControl <= predictdUpToTimestamp)
+    {
       controlIterator++;
+    }
 
     // predict not further than the point in time where the next observation needs to be added.
     if (rpyIterator != navdataQueue->end())
+    {
       predictTo = min(predictTo, getMS(rpyIterator->header.stamp) - delayRPY);
+    }
     if (xyzIterator != navdataQueue->end())
+    {
       predictTo = min(predictTo, getMS(xyzIterator->header.stamp) - delayXYZ);
+    }
 
     predictInternal(
         useControlGains ? controlIterator->twist : geometry_msgs::Twist(), (predictTo - predictdUpToTimestamp) * 1000,
@@ -722,7 +778,9 @@ void DroneKalmanFilter::predictUpTo(int timestamp, bool consume, bool useControl
     if (rpyIterator != navdataQueue->end() && getMS(rpyIterator->header.stamp) - delayRPY == predictTo)
     {
       if (this->useNavdata)
+      {
         observeIMU_RPY(&(*rpyIterator));
+      }
 
       observedRPY = true;
       //cout << "a";
@@ -730,7 +788,9 @@ void DroneKalmanFilter::predictUpTo(int timestamp, bool consume, bool useControl
     if (xyzIterator != navdataQueue->end() && getMS(xyzIterator->header.stamp) - delayXYZ == predictTo)
     {
       if (this->useNavdata)
+      {
         observeIMU_XYZ(&(*xyzIterator));
+      }
 
       observedXYZ = true;
       //cout << "p";
@@ -751,19 +811,25 @@ void DroneKalmanFilter::predictUpTo(int timestamp, bool consume, bool useControl
             << (observedXYZ ? xyzIterator->vy : -1) << " " << (observedXYZ ? lastdZ : -1) << " " << x.state[0] << " "
             << y.state[0] << " " << z.state[0] << " " << roll.state << " " << pitch.state << " " << yaw.state[0] << " "
             << x.state[1] << " " << y.state[1] << " " << z.state[1] << " " << yaw.state[1] << " " << lastVXGain << " "
-            << lastVYGain << " " << "\n";
+            << lastVYGain << " " << std::endl;
         pthread_mutex_unlock(&(node->logFilter_CS));
       }
     }
 
     if (observedRPY)
+    {
       rpyIterator++;
+    }
     if (observedXYZ)
+    {
       xyzIterator++;
+    }
 
     // if this is where we wanna get, quit.
     if (predictTo == timestamp)
+    {
       break;
+    }
   }
 }
 
@@ -773,7 +839,7 @@ TooN::Vector<3> DroneKalmanFilter::transformPTAMObservation(double x, double y, 
 }
 TooN::Vector<3> DroneKalmanFilter::transformPTAMObservation(double x, double y, double z, double yaw)
 {
-  double yawRad = yaw * 3.14159268 / 180;
+  double yawRad = yaw * M_PI / 180;
   x = x_offset + xy_scale * x - 0.2 * sin(yawRad);
   y = y_offset + xy_scale * y - 0.2 * cos(yawRad);
   z = z_offset + z_scale * z;
@@ -796,7 +862,7 @@ TooN::Vector<6> DroneKalmanFilter::backTransformPTAMObservation(TooN::Vector<6> 
   obs[4] -= pitch_offset;
   obs[5] -= yaw_offset;
 
-  double yawRad = obs[5] * 3.14159268 / 180;
+  double yawRad = obs[5] * M_PI / 180;
   obs[0] = (-x_offset + obs[0] + 0.2 * sin(yawRad)) / xy_scale;
   obs[1] = (-y_offset + obs[1] + 0.2 * cos(yawRad)) / xy_scale;
   obs[2] = (-z_offset + obs[2]) / z_scale;
@@ -824,23 +890,41 @@ tum_ardrone::filter_state DroneKalmanFilter::getCurrentPoseSpeed()
   s.pitch = pitch.state;
 
   if (s.roll * s.roll < 0.001)
+  {
     s.roll = 0;
+  }
   if (s.pitch * s.pitch < 0.001)
+  {
     s.pitch = 0;
+  }
   if (s.yaw * s.yaw < 0.001)
+  {
     s.yaw = 0;
+  }
   if (s.dx * s.dx < 0.001)
+  {
     s.dx = 0;
+  }
   if (s.dy * s.dy < 0.001)
+  {
     s.dy = 0;
+  }
   if (s.dz * s.dz < 0.001)
+  {
     s.dz = 0;
+  }
   if (s.x * s.x < 0.001)
+  {
     s.x = 0;
+  }
   if (s.y * s.y < 0.001)
+  {
     s.y = 0;
+  }
   if (s.z * s.z < 0.001)
+  {
     s.z = 0;
+  }
 
   return s;
 }
@@ -865,9 +949,13 @@ TooN::Vector<6> DroneKalmanFilter::getCurrentOffsets()
 {
   TooN::Vector < 6 > res = TooN::makeVector(0, 0, 0, 0, 0, 0);
   if (offsets_xyz_initialized)
+  {
     res.slice<0, 3>() = TooN::makeVector(x_offset, y_offset, z_offset);
+  }
   if (rp_offset_framesContributed > 1)
+  {
     res.slice<3, 3>() = TooN::makeVector(roll_offset, pitch_offset, yaw_offset);
+  }
   return res;
 }
 TooN::Vector<3> DroneKalmanFilter::getCurrentScales()
@@ -884,7 +972,9 @@ TooN::Vector<3> DroneKalmanFilter::getCurrentScalesForLog()
 void DroneKalmanFilter::setCurrentScales(TooN::Vector<3> scales)
 {
   if (allSyncLocked)
+  {
     return;
+  }
   xy_scale = scales[0];
   z_scale = scales[0];
   scale_from_xy = scale_from_z = scales[0];
@@ -908,7 +998,9 @@ void DroneKalmanFilter::setCurrentScales(TooN::Vector<3> scales)
 void DroneKalmanFilter::addPTAMObservation(TooN::Vector<6> trans, int time)
 {
   if (time > predictdUpToTimestamp)
+  {
     predictUpTo(time, true, true);
+  }
 
   observePTAM(trans);
   numGoodPTAMObservations++;
@@ -916,7 +1008,9 @@ void DroneKalmanFilter::addPTAMObservation(TooN::Vector<6> trans, int time)
 void DroneKalmanFilter::addFakePTAMObservation(int time)
 {
   if (time > predictdUpToTimestamp)
+  {
     predictUpTo(time, true, true);
+  }
 
   lastPosesValid = false;
 }

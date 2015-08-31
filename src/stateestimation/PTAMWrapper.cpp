@@ -80,13 +80,21 @@ void PTAMWrapper::ResetInternal()
   mimFrameBW_workingCopy.resize(CVD::ImageRef(frameWidth, frameHeight));
 
   if (mpMapMaker != 0)
+  {
     delete mpMapMaker;
+  }
   if (mpMap != 0)
+  {
     delete mpMap;
+  }
   if (mpTracker != 0)
+  {
     delete mpTracker;
+  }
   if (mpCamera != 0)
+  {
     delete mpCamera;
+  }
 
   // read camera calibration (yes, its done here)
   std::string file = node->calibFile;
@@ -98,9 +106,13 @@ void PTAMWrapper::ResetInternal()
   if (file.size() == 0)
   {
     if (node->arDroneVersion == 1)
+    {
       file = node->packagePath + "/camcalib/ardrone1_default.txt";
+    }
     else if (node->arDroneVersion == 2)
+    {
       file = node->packagePath + "/camcalib/ardrone2_default.txt";
+    }
   }
 
   std::ifstream fleH(file.c_str());
@@ -137,16 +149,26 @@ void PTAMWrapper::setPTAMPars(double minKFTimeDist, double minKFWiggleDist, doub
                               double max_tol)
 {
   if (mpMapMaker != 0)
+  {
     mpMapMaker->minKFDist = minKFDist;
+  }
   if (mpMapMaker != 0)
+  {
     mpMapMaker->minKFWiggleDist = minKFWiggleDist;
+  }
   if (mpTracker != 0)
+  {
     mpTracker->minKFTimeDist = minKFTimeDist;
+  }
 
   if (mpMapMaker != 0)
+  {
     mpMapMaker->min_tol = min_tol;
+  }
   if (mpMapMaker != 0)
+  {
     mpMapMaker->max_tol = max_tol;
+  }
 
   this->minKFDist = minKFDist;
   this->minKFWiggleDist = minKFWiggleDist;
@@ -158,19 +180,33 @@ void PTAMWrapper::setPTAMPars(double minKFTimeDist, double minKFWiggleDist, doub
 PTAMWrapper::~PTAMWrapper(void)
 {
   if (mpCamera != 0)
+  {
     delete mpCamera;
+  }
   if (mpMap != 0)
+  {
     delete mpMap;
+  }
   if (mpMapMaker != 0)
+  {
     delete mpMapMaker;
+  }
   if (mpTracker != 0)
+  {
     delete mpTracker;
+  }
   if (predConvert != 0)
+  {
     delete predConvert;
+  }
   if (predIMUOnlyForScale != 0)
+  {
     delete predIMUOnlyForScale;
+  }
   if (imuOnlyPred != 0)
+  {
     delete imuOnlyPred;
+  }
 
 }
 
@@ -192,12 +228,16 @@ void PTAMWrapper::run()
 {
   std::cout << "Waiting for Video" << std::endl;
 
-  // wait for firsst image
+  // wait for first image
   while (!newImageAvailable)
+  {
     usleep(100000);	// sleep 100ms
+  }
   newImageAvailable = false;
   while (!newImageAvailable)
+  {
     usleep(100000);	// sleep 100ms
+  }
 
   // read image height and width
   frameWidth = mimFrameBW.size().x;
@@ -215,9 +255,13 @@ void PTAMWrapper::run()
 
   changeSizeNextRender = true;
   if (frameWidth < 640)
+  {
     desiredWindowSize = CVD::ImageRef(frameWidth * 2, frameHeight * 2);
+  }
   else
+  {
     desiredWindowSize = CVD::ImageRef(frameWidth, frameHeight);
+  }
 
   boost::unique_lock<boost::mutex> lock(new_frame_signal_mutex);
 
@@ -248,7 +292,9 @@ void PTAMWrapper::run()
       lock.lock();
     }
     else
+    {
       new_frame_signal.wait(lock);
+    }
   }
 
   lock.unlock();
@@ -270,7 +316,9 @@ void PTAMWrapper::HandleFrame()
 
   // reset?
   if (resetPTAMRequested)
+  {
     ResetInternal();
+  }
 
   // make filter thread-safe.
   // --------------------------- ROLL FORWARD TIL FRAME. This is ONLY done here. ---------------------------
@@ -348,7 +396,9 @@ void PTAMWrapper::HandleFrame()
   // calculate absolute differences.
   TooN::Vector < 6 > diffs = PTAMResultTransformed - filterPosePrePTAM.slice<0, 6>();
   for (int i = 0; 1 < 1; i++)
+  {
     diffs[i] = abs(diffs[i]);
+  }
 
   if (filter->getNumGoodPTAMObservations() < 10 && mpMap->IsGood())
   {
@@ -358,7 +408,9 @@ void PTAMWrapper::HandleFrame()
   else if (mpTracker->lastStepResult == mpTracker->I_FIRST || mpTracker->lastStepResult == mpTracker->I_SECOND
       || mpTracker->lastStepResult == mpTracker->I_FAILED || mpTracker->lastStepResult == mpTracker->T_LOST
       || mpTracker->lastStepResult == mpTracker->NOT_TRACKING || mpTracker->lastStepResult == mpTracker->INITIALIZING)
+  {
     isGood = isVeryGood = false;
+  }
   else
   {
     // some chewy heuristic when to add and when not to.
@@ -369,40 +421,60 @@ void PTAMWrapper::HandleFrame()
     // maximum difference is 5 + 2*(number of seconds since PTAM observation).
     double maxYawDiff = 10.0 + (getMS() - lastGoodYawClock) * 0.002;
     if (maxYawDiff > 20)
+    {
       maxYawDiff = 1000;
+    }
     if (false && diffs[5] > maxYawDiff)
+    {
       isGood = false;
+    }
 
     if (diffs[5] < 10)
+    {
       lastGoodYawClock = getMS();
+    }
 
     if (diffs[5] > 4.0)
+    {
       isVeryGood = false;
+    }
 
     // if rp difference too big: something certainly is wrong.
     if (diffs[3] > 20 || diffs[4] > 20)
+    {
       isGood = false;
+    }
 
     if (diffs[3] > 3 || diffs[4] > 3 || dodgy)
+    {
       isVeryGood = false;
+    }
   }
 
   if (isGood)
   {
     if (isGoodCount < 0)
+    {
       isGoodCount = 0;
+    }
     isGoodCount++;
   }
   else
   {
     if (isGoodCount > 0)
+    {
       isGoodCount = 0;
+    }
     isGoodCount--;
 
     if (mpTracker->lastStepResult == mpTracker->T_RECOVERED_DODGY)
+    {
       isGoodCount = std::max(isGoodCount, -2);
+    }
     if (mpTracker->lastStepResult == mpTracker->T_RECOVERED_GOOD)
+    {
       isGoodCount = std::max(isGoodCount, -5);
+    }
 
   }
 
@@ -424,7 +496,9 @@ void PTAMWrapper::HandleFrame()
     filter->addPTAMObservation(PTAMResult, mimFrameTime_workingCopy - filter->delayVideo);
   }
   else
+  {
     filter->addFakePTAMObservation(mimFrameTime_workingCopy - filter->delayVideo);
+  }
 
   filterPosePostPTAM = filter->getCurrentPoseSpeedAsVec();
   pthread_mutex_unlock(&filter->filter_CS);
@@ -432,7 +506,9 @@ void PTAMWrapper::HandleFrame()
   // if interval is started: add one step.
   int includedTime = mimFrameTime_workingCopy - ptamPositionForScaleTakenTimestamp;
   if (framesIncludedForScaleXYZ >= 0)
+  {
     framesIncludedForScaleXYZ++;
+  }
 
   // if interval is overdue: reset & dont add
   if (includedTime > 3000)
@@ -457,8 +533,10 @@ void PTAMWrapper::HandleFrame()
 
       pthread_mutex_lock(&logScalePairs_CS);
       if (logfileScalePairs != 0)
+      {
         (*logfileScalePairs) << pressureStart << " " << pressureEnd << " " << diffIMU[2] << " " << diffPTAM[2]
             << std::endl;
+      }
       pthread_mutex_unlock(&logScalePairs_CS);
 
       if (!allCorrupted)
@@ -508,20 +586,34 @@ void PTAMWrapper::HandleFrame()
 
   // ---------------- save PTAM status for KI --------------------------------
   if (mpTracker->lastStepResult == mpTracker->NOT_TRACKING)
+  {
     PTAMStatus = PTAM_IDLE;
+  }
   else if (mpTracker->lastStepResult == mpTracker->I_FIRST || mpTracker->lastStepResult == mpTracker->I_SECOND
       || mpTracker->lastStepResult == mpTracker->T_TOOK_KF)
+  {
     PTAMStatus = PTAM_TOOKKF;
+  }
   else if (mpTracker->lastStepResult == mpTracker->INITIALIZING)
+  {
     PTAMStatus = PTAM_INITIALIZING;
+  }
   else if (isVeryGood)
+  {
     PTAMStatus = PTAM_BEST;
+  }
   else if (isGood)
+  {
     PTAMStatus = PTAM_GOOD;
+  }
   else if (mpTracker->lastStepResult == mpTracker->T_DODGY || mpTracker->lastStepResult == mpTracker->T_GOOD)
+  {
     PTAMStatus = PTAM_FALSEPOSITIVE;
+  }
   else
+  {
     PTAMStatus = PTAM_LOST;
+  }
 
   // ----------------------------- update shallow map --------------------------
   if (!mapLocked && rand() % 5 == 0)
@@ -577,24 +669,38 @@ void PTAMWrapper::HandleFrame()
   // ---------------------- output and render! ---------------------------
   ros::Duration timeALL = ros::Time::now() - startedFunc;
   if (isVeryGood)
+  {
     snprintf(charBuf, 1000, "\nQuality: best            ");
+  }
   else if (isGood)
+  {
     snprintf(charBuf, 1000, "\nQuality: good           ");
+  }
   else
+  {
     snprintf(charBuf, 1000, "\nQuality: lost                       ");
+  }
 
   snprintf(charBuf + 20, 800, "scale: %.3f (acc: %.3f)                            ", filter->getCurrentScales()[0],
            (double)filter->getScaleAccuracy());
   snprintf(charBuf + 50, 800, "PTAM time: %i ms                            ", (int)(1000 * timeALL.toSec()));
   snprintf(charBuf + 68, 800, "(%i ms total)  ", (int)(1000 * timeALL.toSec()));
   if (mapLocked)
+  {
     snprintf(charBuf + 83, 800, "m.l. ");
+  }
   else
+  {
     snprintf(charBuf + 83, 800, "     ");
+  }
   if (filter->allSyncLocked)
+  {
     snprintf(charBuf + 88, 800, "s.l. ");
+  }
   else
+  {
     snprintf(charBuf + 88, 800, "     ");
+  }
 
   msg += charBuf;
 
@@ -685,6 +791,7 @@ void PTAMWrapper::HandleFrame()
     // - predictedPoseSpeed estimated for lastNfoTimestamp+filter->delayControl	(actually predicting)
     // - predictedPoseSpeedATLASTNFO estimated for lastNfoTimestamp	(using imu only)
     if (node->logfilePTAM != NULL)
+    {
       (*(node->logfilePTAM)) << (isGood ? (isVeryGood ? 2 : 1) : 0) << " "
           << (mimFrameTime_workingCopy - filter->delayVideo) << " " << filterPosePrePTAM[0] << " "
           << filterPosePrePTAM[1] << " " << filterPosePrePTAM[2] << " " << filterPosePrePTAM[3] << " "
@@ -702,6 +809,7 @@ void PTAMWrapper::HandleFrame()
           << PTAMResultSE3TwistOrg[0] << " " << PTAMResultSE3TwistOrg[1] << " " << PTAMResultSE3TwistOrg[2] << " "
           << PTAMResultSE3TwistOrg[3] << " " << PTAMResultSE3TwistOrg[4] << " " << PTAMResultSE3TwistOrg[5] << " "
           << videoFramePing << " " << mimFrameTimeRos_workingCopy << " " << mimFrameSEQ_workingCopy << std::endl;
+    }
 
     pthread_mutex_unlock(&(node->logPTAM_CS));
   }
@@ -729,6 +837,7 @@ void PTAMWrapper::renderGrid(TooN::SE3<> camFromWorld)
   int nTot = nHalfCells * 2 + 1;
   CVD::Image < Vector<2> > imVertices(CVD::ImageRef(nTot, nTot));
   for (int i = 0; i < nTot; i++)
+  {
     for (int j = 0; j < nTot; j++)
     {
       Vector < 3 > v3;
@@ -738,10 +847,13 @@ void PTAMWrapper::renderGrid(TooN::SE3<> camFromWorld)
       Vector < 3 > v3Cam = camFromWorld * v3;
       //v3Cam[2] *= 100;
       if (v3Cam[2] < 0.001)
+      {
         v3Cam = TooN::makeVector(100000 * v3Cam[0], 100000 * v3Cam[1], 0.0001);
+      }
 
       imVertices[i][j] = mpCamera->Project(TooN::project(v3Cam)) * 0.5;
     }
+  }
 
   glEnable (GL_LINE_SMOOTH);
   glEnable (GL_BLEND);
@@ -751,12 +863,16 @@ void PTAMWrapper::renderGrid(TooN::SE3<> camFromWorld)
   {
     glBegin (GL_LINE_STRIP);
     for (int j = 0; j < nTot; j++)
+    {
       CVD::glVertex (imVertices[i][j]);
+    }
     glEnd();
 
     glBegin(GL_LINE_STRIP);
     for (int j = 0; j < nTot; j++)
+    {
       CVD::glVertex (imVertices[j][i]);
+    }
     glEnd();
   };
 
@@ -784,7 +900,9 @@ TooN::Vector<3> PTAMWrapper::evalNavQue(unsigned int from, unsigned int to, bool
     int curStampMs = getMS(cur->header.stamp);
 
     if (curStampMs < (int)from - pressureAverageRange)
+    {
       cur = navInfoQueue.erase(cur);
+    }
     else
     {
       if (curStampMs >= (int)from - pressureAverageRange && curStampMs <= (int)from + pressureAverageRange)
@@ -817,11 +935,13 @@ TooN::Vector<3> PTAMWrapper::evalNavQue(unsigned int from, unsigned int to, bool
         firstAdded = frontStamp;
         firstZ = (cur->altd * 0.001)
             / sqrt(
-                1.0 + (tan(cur->rotX * 3.14159268 / 180) * tan(cur->rotX * 3.14159268 / 180))
-                    + (tan(cur->rotY * 3.14159268 / 180) * tan(cur->rotY * 3.14159268 / 180)));
+                1.0 + (tan(cur->rotX * M_PI / 180) * tan(cur->rotX * M_PI / 180))
+                    + (tan(cur->rotY * M_PI / 180) * tan(cur->rotY * M_PI / 180)));
 
         if (!std::isfinite(firstZ))
+        {
           firstZ = cur->altd * 0.001;
+        }
 
         predIMUOnlyForScale->z = firstZ;	// avoid height check initially!
       }
@@ -840,13 +960,17 @@ TooN::Vector<3> PTAMWrapper::evalNavQue(unsigned int from, unsigned int to, bool
   predIMUOnlyForScale->z -= firstZ;	// make height to height-diff
 
   *zCorrupted = predIMUOnlyForScale->zCorrupted;
-  *allCorrupted = abs(firstAdded - (int)from) + abs(lastAdded - (int)to) > 80;
+  *allCorrupted = abs(firstAdded - from) + abs(lastAdded - to) > 80;
   pthread_mutex_unlock(&navInfoQueueCS);
 
   if (*allCorrupted)
+  {
     printf("scalePackage corrupted (imu data gap for %ims)\n", abs(firstAdded - (int)from) + abs(lastAdded - (int)to));
+  }
   else if (*zCorrupted)
+  {
     printf("scalePackage z corrupted (jump in meters: %.3f)!\n", predIMUOnlyForScale->zCorruptedJump);
+  }
 
   printf("from: %u to: %u; first: %d last: %d firstZ %f => z alt diff: %f\n", from, to, firstAdded, lastAdded, firstZ,
          predIMUOnlyForScale->z);
@@ -882,7 +1006,9 @@ void PTAMWrapper::newNavdata(ardrone_autonomy::Navdata* nav)
   {
     navInfoQueue.pop_front();
     if (!navQueueOverflown)
+    {
       printf("NavQue Overflow detected!\n");
+    }
     navQueueOverflown = true;
   }
   pthread_mutex_unlock(&navInfoQueueCS);
@@ -903,9 +1029,13 @@ void PTAMWrapper::newImage(sensor_msgs::ImageConstPtr img)
 
   // copy to internal image, convert to bw, set flag.
   if (ros::Time::now() - img->header.stamp > ros::Duration(30.0))
+  {
     mimFrameTimeRos = (ros::Time::now() - ros::Duration(0.001));
+  }
   else
+  {
     mimFrameTimeRos = (img->header.stamp);
+  }
 
   mimFrameTime = getMS(mimFrameTimeRos);
 
@@ -915,7 +1045,9 @@ void PTAMWrapper::newImage(sensor_msgs::ImageConstPtr img)
   // copy to mimFrame.
   // TODO: make this threadsafe (save pointer only and copy in HandleFrame)
   if ((int)(mimFrameBW.size().x) != img->width || (int)(mimFrameBW.size().y) != img->height)
+  {
     mimFrameBW.resize(CVD::ImageRef(img->width, img->height));
+  }
 
   memcpy(mimFrameBW.data(), cv_ptr->image.data, img->width * img->height);
   newImageAvailable = true;
@@ -1014,13 +1146,21 @@ bool PTAMWrapper::handleCommand(std::string s)
   if (s.length() == 8 && s.substr(0, 8) == "toggleUI")
   {
     if (drawUI == UI_NONE)
+    {
       drawUI = UI_DEBUG;
+    }
     else if (drawUI == UI_DEBUG)
+    {
       drawUI = UI_PRES;
+    }
     else if (drawUI == UI_PRES)
+    {
       drawUI = UI_NONE;
+    }
     else
+    {
       drawUI = UI_PRES;
+    }
   }
 
   if (s.length() == 11 && s.substr(0, 11) == "lockScaleFP")
@@ -1073,9 +1213,13 @@ void PTAMWrapper::on_mouse_down(CVD::ImageRef where, int state, int button)
   node->publishCommand("c lockScaleFP");
 
   if (button == 1)
+  {
     snprintf(bf, 100, "c moveByRel %.3f %.3f 0 0", x, y);
+  }
   else
+  {
     snprintf(bf, 100, "c moveByRel 0 0 %.3f %.3f", y, x * 45);
+  }
 
   node->publishCommand(bf);
 }
