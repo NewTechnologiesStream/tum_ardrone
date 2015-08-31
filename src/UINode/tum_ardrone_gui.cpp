@@ -103,7 +103,7 @@ tum_ardrone_gui::tum_ardrone_gui(QWidget *parent)
     	ui.comboBoxLoadFile->addItem(QString(files[i].c_str()), QVariant());
 
 
-    sendMission_srv = nh_.advertiseService("drone_gui/SendMission", &tum_ardrone_gui::sendMission, this);
+    sendMission_srv = nh_.advertiseService("drone_gui/SendMission", &tum_ardrone_gui::SendMission, this);
 
 }
 
@@ -154,10 +154,10 @@ void tum_ardrone_gui::SendClicked()
 	setControlSource(CONTROL_AUTO);
 }
 
-bool tum_ardrone_gui::sendMission(tum_ardrone::SendMission::Request& req, tum_ardrone::SendMission::Response& res){
+bool tum_ardrone_gui::SendMission(tum_ardrone::SendMission::Request& req, tum_ardrone::SendMission::Response& res){
     // Couldn't split ROS service string as default
-    // because '\n' char will be converted to '\' 'n'
-    // Splitting by '%'
+    // because '\n' char will be converted to '\' 'n'.
+    // Splitting by '%' char
     std::string s = req.data;
     QString q_str = QString::fromAscii(s.data(), s.size());
     QStringList l = q_str.split('%');

@@ -92,7 +92,7 @@ public:
     PingThread* pingThread;
 
     ros::NodeHandle nh_;
-    bool sendMission(tum_ardrone::SendMission::Request& req, tum_ardrone::SendMission::Response& res);
+    bool SendMission(tum_ardrone::SendMission::Request& req, tum_ardrone::SendMission::Response& res);
 
     void setCounts(unsigned int nav,unsigned int control,unsigned int pose,unsigned int joy);
     void setPings(int p500, int p20000);
