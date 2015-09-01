@@ -770,7 +770,7 @@ void DroneKalmanFilter::predictUpTo(int timestamp, bool consume, bool useControl
 
     predictInternal(
         useControlGains ? controlIterator->twist : geometry_msgs::Twist(), (predictTo - predictdUpToTimestamp) * 1000,
-        useControlGains && getMS(controlIterator->header.stamp) + 200 > predictdUpToTimestamp - delayControl);// control max. 200ms old.
+        useControlGains && getMS(controlIterator->header.stamp) + 200 > predictdUpToTimestamp - delayControl); // control max. 200ms old.
 
         // if an observation needs to be added, it HAS to have a stamp equal to [predictTo],
         // as we just set [predictTo] to that timestamp.
