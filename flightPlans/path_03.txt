@@ -1,5 +1,6 @@
 ###### TAKEOFF ######
-autoInit 500 800 4000 0.5
+setReference $POSE$
+takeoff
 goto  0.000  0.000 0.5    0
 ###### TAKEOFF ######
 
@@ -83,7 +84,7 @@ goto -0.750  1.299 1.0    0
 goto  0.000  1.500 1.0    0
 ###### CIRCLE 3M 5 ######
 
-###### LANDING ######
+###### LAND ######
 goto  0.000  0.000 0.5    0
 land
-###### LANDING ######
+###### LAND ######

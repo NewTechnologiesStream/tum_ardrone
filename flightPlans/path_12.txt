@@ -1,5 +1,6 @@
 ###### TAKEOFF ######
-autoInit 500 800 4000 0.5
+setReference $POSE$
+takeoff
 goto  0.000  0.000 0.5    0
 ###### TAKEOFF ######
 
@@ -43,7 +44,7 @@ goto  1.000  0.000 0.5    0
 goto  1.000  0.000 1.5    0
 ###### PLANE XZ 5 ######
 
-###### LANDING ######
+###### LAND ######
 goto  0.000  0.000 0.5    0
 land
-###### LANDING ######
+###### LAND ######
