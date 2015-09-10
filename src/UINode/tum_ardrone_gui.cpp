@@ -155,6 +155,11 @@ void tum_ardrone_gui::SendClicked()
 }
 
 bool tum_ardrone_gui::SendMission(tum_ardrone::SendMission::Request& req, tum_ardrone::SendMission::Response& res){
+    // Check if we must clear the command queue
+    if(req.clear){
+        rosThread->publishCommand("c clearCommands");
+    }
+
     // Couldn't split ROS service string as default
     // because '\n' char will be converted to '\' 'n'.
     // Splitting by '%' char
