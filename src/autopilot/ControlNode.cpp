@@ -539,6 +539,7 @@ void ControlNode::reSendInfo()
   double ea = sqrt(e[0] * e[0] + e[1] * e[1] + e[2] * e[2]);
 
   tum_ardrone::Autopilot autopilot;
+  autopilot.header.stamp = ros::Time::now();
   autopilot.controlling = isControlling;
   autopilot.queue = commandQueue.size();
   autopilot.current = currentKI == NULL ? "NULL" : currentKI->command.c_str();
