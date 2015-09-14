@@ -31,6 +31,7 @@
 #include "std_msgs/Empty.h"
 #include "std_srvs/Empty.h"
 
+#include "tum_ardrone/Autopilot.h"
 #include "tum_ardrone/SetReference.h"
 #include "tum_ardrone/GetReference.h"
 #include "tum_ardrone/SetMaxControl.h"
@@ -49,6 +50,7 @@ class KIProcedure;
 struct ControlNode
 {
 private:    
+       ros::Publisher autopilot_pub;
 	ros::Subscriber dronepose_sub;
 	ros::Publisher vel_pub;
 	ros::Subscriber tum_ardrone_sub;
@@ -62,6 +64,7 @@ private:
 
 	// parameters
 	int minPublishFreq;
+	std::string autopilot_channel;
 	std::string control_channel;
 	std::string dronepose_channel;
 	std::string command_channel;
