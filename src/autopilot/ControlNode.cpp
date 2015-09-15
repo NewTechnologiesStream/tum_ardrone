@@ -44,6 +44,7 @@ pthread_mutex_t ControlNode::logControl_CS = PTHREAD_MUTEX_INITIALIZER;
 
 ControlNode::ControlNode()
 {
+  autopilot_channel = nh_.resolveName("tum_ardrone/autopilot");
   control_channel = nh_.resolveName("cmd_vel");
   dronepose_channel = nh_.resolveName("ardrone/predictedPose");
   command_channel = nh_.resolveName("tum_ardrone/com");
@@ -70,6 +71,7 @@ ControlNode::ControlNode()
   lastControlSentMS = 0;
 
   // channels
+  autopilot_pub = nh_.advertise<tum_ardrone::Autopilot>(autopilot_channel, 10);
   dronepose_sub = nh_.subscribe(dronepose_channel, 10, &ControlNode::droneposeCb, this);
   vel_pub = nh_.advertise<geometry_msgs::Twist>(control_channel, 1);
   tum_ardrone_pub = nh_.advertise<std_msgs::String>(command_channel, 50);
@@ -518,17 +520,46 @@ void ControlNode::reSendInfo()
   DronePosition p = controller.getCurrentTarget();
   TooN::Vector < 4 > e = controller.getLastErr();
   double ea = sqrt(e[0] * e[0] + e[1] * e[1] + e[2] * e[2]);
+
+  tum_ardrone::Autopilot autopilot;
+  autopilot.header.stamp = ros::Time::now();
+  autopilot.controlling = isControlling;
+  autopilot.queue = commandQueue.size();
+  autopilot.current = currentKI == NULL ? "NULL" : currentKI->command.c_str();
+  autopilot.next = commandQueue.size() > 0 ? commandQueue.front().c_str() : "NULL";
+  autopilot.reference_x = parameter_referenceZero.pos[0];
+  autopilot.reference_y = parameter_referenceZero.pos[1];
+  autopilot.reference_z = parameter_referenceZero.pos[2];
+  autopilot.reference_yaw = parameter_referenceZero.yaw;
+  autopilot.target_x = p.pos[0] - parameter_referenceZero.pos[0];
+  autopilot.target_y = p.pos[1] - parameter_referenceZero.pos[1];
+  autopilot.target_z = p.pos[2] - parameter_referenceZero.pos[2];
+  autopilot.target_yaw = p.yaw - parameter_referenceZero.yaw;
+  autopilot.ptam_x = p.pos[0];
+  autopilot.ptam_y = p.pos[1];
+  autopilot.ptam_z = p.pos[2];
+  autopilot.ptam_yaw = p.yaw;
+  autopilot.error_x = e[0];
+  autopilot.error_y = e[1];
+  autopilot.error_z = e[2];
+  autopilot.error_yaw = e[3];
+  autopilot.error_dist = ea;
+  autopilot.roll = lastSentControl.roll;
+  autopilot.pitch = lastSentControl.pitch;
+  autopilot.gaz = lastSentControl.gaz;
+  autopilot.yaw = lastSentControl.yaw;
+
   snprintf(
       buf,
       500,
       "u c %s (Queue: %d)\nCurrent: %s\nNext: %s\nTarget (Autopilot): (%.2f,  %.2f,  %.2f), %.1f\nTarget (PTAM): (%.2f,  %.2f,  %.2f), %.1f\nError: (%.2f,  %.2f,  %.2f), %.1f (|.| %.2f)\nCont.: r %.2f, p %.2f, g %.2f, y %.2f",
-      isControlling ? "Controlling" : "Idle", (int)commandQueue.size(),
-      currentKI == NULL ? "NULL" : currentKI->command.c_str(),
-      commandQueue.size() > 0 ? commandQueue.front().c_str() : "NULL", p.pos[0] - parameter_referenceZero.pos[0],
-      p.pos[1] - parameter_referenceZero.pos[1], p.pos[2] - parameter_referenceZero.pos[2],
-      p.yaw - parameter_referenceZero.yaw, p.pos[0], p.pos[1], p.pos[2], p.yaw, e[0], e[1], e[2], e[3], ea,
-      lastSentControl.roll, lastSentControl.pitch, lastSentControl.gaz, lastSentControl.yaw);
+      autopilot.controlling ? "Controlling" : "Idle", (int)autopilot.queue, autopilot.current.c_str(),
+      autopilot.next.c_str(), autopilot.target_x, autopilot.target_y, autopilot.target_z, autopilot.target_yaw,
+      autopilot.ptam_x, autopilot.ptam_y, autopilot.ptam_z, autopilot.ptam_yaw, autopilot.error_x, autopilot.error_y,
+      autopilot.error_z, autopilot.error_yaw, autopilot.error_dist, autopilot.roll, autopilot.pitch, autopilot.gaz,
+      autopilot.yaw);
 
+  autopilot_pub.publish(autopilot);
   publishCommand(buf);
 }
 
@@ -660,4 +691,3 @@ bool ControlNode::lockScaleFP(std_srvs::Empty::Request&, std_srvs::Empty::Respon
   this->publishCommand("p lockScaleFP");
   return true;
 }
-

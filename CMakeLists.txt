@@ -50,7 +50,7 @@ generate_dynamic_reconfigure_options(
 ################################################
 
 ## Generate messages in the 'msg' folder
-add_message_files(FILES filter_state.msg)
+add_message_files(FILES Autopilot.msg filter_state.msg)
 
 ## Generate services in the 'srv' folder
 add_service_files(
