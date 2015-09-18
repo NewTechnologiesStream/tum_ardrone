@@ -30,7 +30,8 @@
 #include "sensor_msgs/Joy.h"
 #include "std_srvs/Empty.h"
 #include "std_msgs/Empty.h"
-#include "tum_ardrone/SendCommand.h"
+#include "tum_ardrone/SendCommands.h"
+#include "tum_ardrone/FlatTrim.h"
 
 class tum_ardrone_gui;
 
@@ -79,7 +80,8 @@ private:
   ros::Subscriber land_sub;
   ros::Subscriber toggleState_sub;
 
-  ros::ServiceServer sendCommand_srv;
+  ros::ServiceServer sendCommands_srv;
+  ros::ServiceServer flatTrim_srv;
 
   ros::NodeHandle nh_;
 
@@ -132,7 +134,8 @@ public:
   void sendResetMsg();
 
   // service callback
-  bool sendCommand(tum_ardrone::SendCommand::Request& req, tum_ardrone::SendCommand::Response& res);
+  bool sendCommands(tum_ardrone::SendCommands::Request& req, tum_ardrone::SendCommands::Response& res);
+  bool flatTrim(tum_ardrone::FlatTrim::Request& req, tum_ardrone::FlatTrim::Response& res);
 };
 
 #endif /* __ROSTHREAD_H */
