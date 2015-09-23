@@ -239,14 +239,14 @@ void EstimationNode::comCb(const std_msgs::StringConstPtr str)
   }
 
   /*if (str->data.length() > 2 && str->data.substr(0, 2) == "f ")
-  {
-    mapView->handleCommand(str->data.substr(2, str->data.length() - 2));
-  }
+   {
+   mapView->handleCommand(str->data.substr(2, str->data.length() - 2));
+   }
 
-  if (str->data.length() > 2 && str->data.substr(0, 2) == "m ")
-  {
-    mapView->handleCommand(str->data.substr(2, str->data.length() - 2));
-  }*/
+   if (str->data.length() > 2 && str->data.substr(0, 2) == "m ")
+   {
+   mapView->handleCommand(str->data.substr(2, str->data.length() - 2));
+   }*/
 
   if (str->data.length() == 9 && str->data.substr(0, 9) == "toggleLog")
   {
