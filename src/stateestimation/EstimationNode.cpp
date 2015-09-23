@@ -37,7 +37,7 @@
 #include "std_msgs/String.h"
 #include "std_msgs/Empty.h"
 #include "std_srvs/Empty.h"
-#include "MapView.h"
+//#include "MapView.h"
 #include <sys/stat.h>
 #include <string>
 
@@ -104,7 +104,7 @@ EstimationNode::EstimationNode()
   lastNavStamp = ros::Time(0);
   filter = new DroneKalmanFilter(this);
   ptamWrapper = new PTAMWrapper(filter, this);
-  mapView = new MapView(filter, ptamWrapper, this);
+  //mapView = new MapView(filter, ptamWrapper, this);
   arDroneVersion = 0;
   //memset(&lastNavdataReceived,0,sizeof(ardrone_autonomy::Navdata));
 
@@ -117,7 +117,7 @@ EstimationNode::EstimationNode()
 EstimationNode::~EstimationNode()
 {
   filter->release();
-  delete mapView;
+  //delete mapView;
   delete ptamWrapper;
   delete filter;
 
@@ -238,7 +238,7 @@ void EstimationNode::comCb(const std_msgs::StringConstPtr str)
     ptamWrapper->handleCommand(str->data.substr(2, str->data.length() - 2));
   }
 
-  if (str->data.length() > 2 && str->data.substr(0, 2) == "f ")
+  /*if (str->data.length() > 2 && str->data.substr(0, 2) == "f ")
   {
     mapView->handleCommand(str->data.substr(2, str->data.length() - 2));
   }
@@ -246,7 +246,7 @@ void EstimationNode::comCb(const std_msgs::StringConstPtr str)
   if (str->data.length() > 2 && str->data.substr(0, 2) == "m ")
   {
     mapView->handleCommand(str->data.substr(2, str->data.length() - 2));
-  }
+  }*/
 
   if (str->data.length() == 9 && str->data.substr(0, 9) == "toggleLog")
   {

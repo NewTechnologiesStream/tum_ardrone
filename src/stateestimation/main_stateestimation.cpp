@@ -21,7 +21,7 @@
 #include "EstimationNode.h"
 #include "ros/ros.h"
 #include "PTAMWrapper.h"
-#include "MapView.h"
+//#include "MapView.h"
 
 // this global var is used in getMS(ros::Time t) to convert to a consistent integer timestamp used internally pretty much everywhere.
 // kind of an artifact from Windows-Version, where only that was available / used.
@@ -42,11 +42,11 @@ int main(int argc, char **argv)
   srv.setCallback(f);
 
   estimator.ptamWrapper->startSystem();
-  estimator.mapView->startSystem();
+  //estimator.mapView->startSystem();
 
   estimator.Loop();
 
-  estimator.mapView->stopSystem();
+  //estimator.mapView->stopSystem();
   estimator.ptamWrapper->stopSystem();
 
   return 0;

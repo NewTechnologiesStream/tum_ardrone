@@ -42,7 +42,7 @@
 #include <fstream>
 
 class DroneKalmanFilter;
-class MapView;
+//class MapView;
 class PTAMWrapper;
 class KIProcedure;
 
