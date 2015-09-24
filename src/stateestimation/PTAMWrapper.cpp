@@ -1204,22 +1204,22 @@ bool PTAMWrapper::handleCommand(std::string s)
 }
 
 /*void PTAMWrapper::on_mouse_down(CVD::ImageRef where, int state, int button)
-{
-  double x = 4 * (where.x / (double)this->myGLWindow->size().x - 0.5);
-  double y = -4 * (where.y / (double)this->myGLWindow->size().y - 0.5);
-  char bf[100];
+ {
+ double x = 4 * (where.x / (double)this->myGLWindow->size().x - 0.5);
+ double y = -4 * (where.y / (double)this->myGLWindow->size().y - 0.5);
+ char bf[100];
 
-  node->publishCommand("c clearCommands");
-  node->publishCommand("c lockScaleFP");
+ node->publishCommand("c clearCommands");
+ node->publishCommand("c lockScaleFP");
 
-  if (button == 1)
-  {
-    snprintf(bf, 100, "c moveByRel %.3f %.3f 0 0", x, y);
-  }
-  else
-  {
-    snprintf(bf, 100, "c moveByRel 0 0 %.3f %.3f", y, x * 45);
-  }
+ if (button == 1)
+ {
+ snprintf(bf, 100, "c moveByRel %.3f %.3f 0 0", x, y);
+ }
+ else
+ {
+ snprintf(bf, 100, "c moveByRel 0 0 %.3f %.3f", y, x * 45);
+ }
 
-  node->publishCommand(bf);
-}*/
+ node->publishCommand(bf);
+ }*/

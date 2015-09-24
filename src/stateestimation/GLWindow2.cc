@@ -102,7 +102,8 @@ void GLWindow2::SetupWindowOrtho()
 {
   glMatrixMode (GL_PROJECTION);
   glLoadIdentity();
-  glOrtho (size());}
+  glOrtho(size());
+}
 
 void GLWindow2::SetupVideoOrtho()
 {

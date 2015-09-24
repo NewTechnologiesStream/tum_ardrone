@@ -38,7 +38,7 @@
 #include "TooN/se3.h"
 
 class DroneKalmanFilter;
-//class MapView;
+class MapView;
 class PTAMWrapper;
 
 struct EstimationNode
@@ -92,7 +92,7 @@ public:
   // filter
   DroneKalmanFilter* filter;
   PTAMWrapper* ptamWrapper;
-  //MapView* mapView;
+  MapView* mapView;
   std::string packagePath;
 
   EstimationNode();
