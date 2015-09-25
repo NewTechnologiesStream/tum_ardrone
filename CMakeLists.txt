@@ -64,6 +64,7 @@ add_service_files(
 	SetStayTime.srv
   SendCommands.srv
   FlatTrim.srv
+  Land.srv
 )
 
 ## Generate added messages 
