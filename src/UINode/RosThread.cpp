@@ -162,6 +162,13 @@ bool RosThread::flatTrim(tum_ardrone::FlatTrim::Request &req, tum_ardrone::FlatT
   return true;
 }
 
+bool RosThread::land(tum_ardrone::Land::Request& req, tum_ardrone::Land::Response& res)
+{
+  publishCommand("c clearCommands");
+  sendLand();
+  return true;
+}
+
 bool RosThread::sendCommands(tum_ardrone::SendCommands::Request& req, tum_ardrone::SendCommands::Response& res){
     // Check if we must clear the command queue
     if(req.clear){
@@ -219,7 +226,7 @@ void RosThread::run()
 
   pub_reset = nh_.advertise<std_msgs::Empty>("ardrone/reset", 1); //send robot input on /cmd_vel topic
 
-
+  land_srv = nh_.advertiseService("drone_gui/land", &RosThread::land, this);
   flatTrim_srv = nh_.advertiseService("drone_gui/flatTrim", &RosThread::flatTrim, this);
   sendCommands_srv = nh_.advertiseService("drone_gui/sendCommands", &RosThread::sendCommands, this);
 
