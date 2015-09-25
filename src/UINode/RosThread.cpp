@@ -156,44 +156,6 @@ void RosThread::comCb(const std_msgs::StringConstPtr str)
   }
 }
 
-bool RosThread::flatTrim(tum_ardrone::FlatTrim::Request &req, tum_ardrone::FlatTrim::Response &res)
-{
-  sendFlattrim();
-  return true;
-}
-
-bool RosThread::land(tum_ardrone::Land::Request& req, tum_ardrone::Land::Response& res)
-{
-  publishCommand("c clearCommands");
-  sendLand();
-  return true;
-}
-
-bool RosThread::sendCommands(tum_ardrone::SendCommands::Request& req, tum_ardrone::SendCommands::Response& res){
-    // Check if we must clear the command queue
-    if(req.clear){
-        publishCommand("c clearCommands");
-    }
-
-    // Couldn't split ROS service string as default
-    // because '\n' char will be converted to '\' 'n'.
-    // Splitting by '%' char
-    std::string s = req.data;
-    QString q_str = QString::fromAscii(s.data(), s.size());
-    QStringList l = q_str.split('%');
-
-    for(int i=0;i<l.length();i++)
-    {
-        std::string s = l[i].trimmed().toStdString();
-
-        if(s.size() > 0)
-            publishCommand(std::string("c ")+s);
-    }
-    //setControlSource(CONTROL_AUTO);
-
-    return true;
-}
-
 void RosThread::sendResetMsg()
 {
   pub_reset.publish(emp_msg);
@@ -225,10 +187,6 @@ void RosThread::run()
   flattrim_srv = nh_.serviceClient<std_srvs::Empty>(nh_.resolveName("ardrone/flattrim"), 1);
 
   pub_reset = nh_.advertise<std_msgs::Empty>("ardrone/reset", 1); //send robot input on /cmd_vel topic
-
-  land_srv = nh_.advertiseService("drone_gui/land", &RosThread::land, this);
-  flatTrim_srv = nh_.advertiseService("drone_gui/flatTrim", &RosThread::flatTrim, this);
-  sendCommands_srv = nh_.advertiseService("drone_gui/sendCommands", &RosThread::sendCommands, this);
 
   ros::Time last = ros::Time::now();
   ros::Time lastHz = ros::Time::now();

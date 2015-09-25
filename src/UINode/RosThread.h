@@ -30,9 +30,6 @@
 #include "sensor_msgs/Joy.h"
 #include "std_srvs/Empty.h"
 #include "std_msgs/Empty.h"
-#include "tum_ardrone/SendCommands.h"
-#include "tum_ardrone/FlatTrim.h"
-#include "tum_ardrone/Land.h"
 
 class tum_ardrone_gui;
 
@@ -80,10 +77,6 @@ private:
   ros::Subscriber takeoff_sub;
   ros::Subscriber land_sub;
   ros::Subscriber toggleState_sub;
-
-  ros::ServiceServer sendCommands_srv;
-  ros::ServiceServer flatTrim_srv;
-  ros::ServiceServer land_srv;
 
   ros::NodeHandle nh_;
 
@@ -134,11 +127,6 @@ public:
   void sendToggleCam();
   void sendFlattrim();
   void sendResetMsg();
-
-  // service callback
-  bool sendCommands(tum_ardrone::SendCommands::Request& req, tum_ardrone::SendCommands::Response& res);
-  bool flatTrim(tum_ardrone::FlatTrim::Request& req, tum_ardrone::FlatTrim::Response& res);
-  bool land(tum_ardrone::Land::Request& req, tum_ardrone::Land::Response& res);
 };
 
 #endif /* __ROSTHREAD_H */

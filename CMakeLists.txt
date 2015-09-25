@@ -57,14 +57,11 @@ add_service_files(
 	DIRECTORY srv
 	FILES
 	SetReference.srv
-  GetReference.srv
+	GetReference.srv
 	SetMaxControl.srv
 	SetInitialReachDistance.srv
 	SetStayWithinDistance.srv
 	SetStayTime.srv
-  SendCommands.srv
-  FlatTrim.srv
-  Land.srv
 )
 
 ## Generate added messages 
