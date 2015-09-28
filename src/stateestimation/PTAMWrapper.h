@@ -21,7 +21,7 @@
 #ifndef __PTAMWRAPPER_H
 #define __PTAMWRAPPER_H
 
-//#include "GLWindow2.h"
+#include "GLWindow2.h"
 #include "TooN/se3.h"
 #include <deque>
 #include "sensor_msgs/Image.h"
@@ -52,8 +52,9 @@ typedef TooN::SE3<> tse3;
 class PTAMWrapper : private CVD::Thread, private MouseKeyHandler
 {
 private:
+
   // base window
-  //GLWindow2* myGLWindow;
+  GLWindow2* myGLWindow;
   CVD::ImageRef desiredWindowSize;		// size the window scould get changed to if [changeSizeNextRender]
   CVD::ImageRef defaultWindowSize;		// size the window gets opened with
   bool changeSizeNextRender;
@@ -169,7 +170,7 @@ public:
   // get called by the myGLWindow on respective event.
   virtual void on_key_down(int key);
   //virtual void on_mouse_move(CVD::ImageRef where, int state);
-  //virtual void on_mouse_down(CVD::ImageRef where, int state, int button);
+  virtual void on_mouse_down(CVD::ImageRef where, int state, int button);
   //virtual void on_event(int event);
 
   // resets PTAM tracking

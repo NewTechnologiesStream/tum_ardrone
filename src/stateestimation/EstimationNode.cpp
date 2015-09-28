@@ -50,6 +50,8 @@ pthread_mutex_t EstimationNode::logPTAMRaw_CS = PTHREAD_MUTEX_INITIALIZER;
 
 EstimationNode::EstimationNode()
 {
+  ros::param::param<bool>("~video", gui, false);
+
   navdata_channel = nh_.resolveName("ardrone/navdata");
   control_channel = nh_.resolveName("cmd_vel");
   output_channel = nh_.resolveName("ardrone/predictedPose");

@@ -89,6 +89,8 @@ private:
   ardrone_autonomy::Navdata lastNavdataReceived;
 
 public:
+  bool gui;
+
   // filter
   DroneKalmanFilter* filter;
   PTAMWrapper* ptamWrapper;

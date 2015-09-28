@@ -31,7 +31,7 @@
 #include "DroneKalmanFilter.h"
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
-//#include "GLWindow2.h"
+#include "GLWindow2.h"
 #include "EstimationNode.h"
 #include <iostream>
 #include <fstream>
@@ -250,8 +250,11 @@ void PTAMWrapper::run()
   node->publishCommand(std::string("u l ") + charBuf);
 
   // create window
-  //myGLWindow = new GLWindow2(CVD::ImageRef(frameWidth, frameHeight), "PTAM Drone Camera Feed", this);
-  //myGLWindow->set_title("PTAM Drone Camera Feed");
+  if (node->gui)
+  {
+    myGLWindow = new GLWindow2(CVD::ImageRef(frameWidth, frameHeight), "PTAM Drone Camera Feed", this);
+    myGLWindow->set_title("PTAM Drone Camera Feed");
+  }
 
   changeSizeNextRender = true;
   if (frameWidth < 640)
@@ -282,9 +285,9 @@ void PTAMWrapper::run()
 
       HandleFrame();
 
-      if (changeSizeNextRender)
+      if (node->gui && changeSizeNextRender)
       {
-        //myGLWindow->set_size(desiredWindowSize);
+        myGLWindow->set_size(desiredWindowSize);
         changeSizeNextRender = false;
       }
 
@@ -298,7 +301,10 @@ void PTAMWrapper::run()
   }
 
   lock.unlock();
-  //delete myGLWindow;
+  if (node->gui)
+  {
+    delete myGLWindow;
+  }
 }
 
 // called every time a new frame is available.
@@ -328,9 +334,12 @@ void PTAMWrapper::HandleFrame()
   pthread_mutex_unlock(&filter->filter_CS);
 
   // ------------------------ do PTAM -------------------------
-  //myGLWindow->SetupViewport();
-  //myGLWindow->SetupVideoOrtho();
-  //myGLWindow->SetupVideoRasterPosAndZoom();
+  if (node->gui)
+  {
+    myGLWindow->SetupViewport();
+    myGLWindow->SetupVideoOrtho();
+    myGLWindow->SetupVideoRasterPosAndZoom();
+  }
 
   // 1. transform with filter
   TooN::Vector < 6 > PTAMPoseGuess = filter->backTransformPTAMObservation(filterPosePrePTAM.slice<0, 6>());
@@ -743,11 +752,11 @@ void PTAMWrapper::HandleFrame()
     //renderGrid(PTAMResultSE3);
 
     // draw HUD
-    //if(mod->getControlSystem()->isControlling())
+    if (node->gui)
     {
-      //myGLWindow->SetupViewport();
-      //myGLWindow->SetupVideoOrtho();
-      //myGLWindow->SetupVideoRasterPosAndZoom();
+      myGLWindow->SetupViewport();
+      myGLWindow->SetupVideoOrtho();
+      myGLWindow->SetupVideoRasterPosAndZoom();
 
       //glDisable(GL_LINE_SMOOTH);
       glLineWidth(2);
@@ -771,9 +780,9 @@ void PTAMWrapper::HandleFrame()
       glVertex2f(0.52 * frameWidth, 0.75 * frameHeight);
 
       glEnd();
-    }
 
-    //myGLWindow->DrawCaption(msg);
+      myGLWindow->DrawCaption(msg);
+    }
   }
 
   lastPTAMResultRaw = PTAMResultSE3;
@@ -814,17 +823,22 @@ void PTAMWrapper::HandleFrame()
     pthread_mutex_unlock(&(node->logPTAM_CS));
   }
 
-  //myGLWindow->swap_buffers();
-  //myGLWindow->HandlePendingEvents();
-
+  if (node->gui)
+  {
+    myGLWindow->swap_buffers();
+    myGLWindow->HandlePendingEvents();
+  }
 }
 
 // Draw the reference grid to give the user an idea of wether tracking is OK or not.
 void PTAMWrapper::renderGrid(TooN::SE3<> camFromWorld)
 {
-  //myGLWindow->SetupViewport();
-  //myGLWindow->SetupVideoOrtho();
-  //myGLWindow->SetupVideoRasterPosAndZoom();
+  if (node->gui)
+  {
+    myGLWindow->SetupViewport();
+    myGLWindow->SetupVideoOrtho();
+    myGLWindow->SetupVideoRasterPosAndZoom();
+  }
 
   camFromWorld.get_translation() *= 1;
 
@@ -1203,23 +1217,23 @@ bool PTAMWrapper::handleCommand(std::string s)
   return true;
 }
 
-/*void PTAMWrapper::on_mouse_down(CVD::ImageRef where, int state, int button)
- {
- double x = 4 * (where.x / (double)this->myGLWindow->size().x - 0.5);
- double y = -4 * (where.y / (double)this->myGLWindow->size().y - 0.5);
- char bf[100];
+void PTAMWrapper::on_mouse_down(CVD::ImageRef where, int state, int button)
+{
+  double x = 4 * (where.x / (double)this->myGLWindow->size().x - 0.5);
+  double y = -4 * (where.y / (double)this->myGLWindow->size().y - 0.5);
+  char bf[100];
 
- node->publishCommand("c clearCommands");
- node->publishCommand("c lockScaleFP");
+  node->publishCommand("c clearCommands");
+  node->publishCommand("c lockScaleFP");
 
- if (button == 1)
- {
- snprintf(bf, 100, "c moveByRel %.3f %.3f 0 0", x, y);
- }
- else
- {
- snprintf(bf, 100, "c moveByRel 0 0 %.3f %.3f", y, x * 45);
- }
+  if (button == 1)
+  {
+    snprintf(bf, 100, "c moveByRel %.3f %.3f 0 0", x, y);
+  }
+  else
+  {
+    snprintf(bf, 100, "c moveByRel 0 0 %.3f %.3f", y, x * 45);
+  }
 
- node->publishCommand(bf);
- }*/
+  node->publishCommand(bf);
+}
