@@ -62,7 +62,7 @@ PTAMWrapper::PTAMWrapper(DroneKalmanFilter* f, EstimationNode* nde)
   predIMUOnlyForScale = new Predictor();
   imuOnlyPred = new Predictor();
 
-  drawUI = UI_PRES;
+  drawUI = node->gui ? UI_PRES : UI_NONE;
   frameWidth = frameHeight = 0;
 
   minKFDist = 0;
@@ -285,7 +285,7 @@ void PTAMWrapper::run()
 
       HandleFrame();
 
-      if (node->gui && changeSizeNextRender)
+      if (myGLWindow != 0 && changeSizeNextRender)
       {
         myGLWindow->set_size(desiredWindowSize);
         changeSizeNextRender = false;
@@ -301,7 +301,7 @@ void PTAMWrapper::run()
   }
 
   lock.unlock();
-  if (node->gui)
+  if (myGLWindow != 0)
   {
     delete myGLWindow;
   }
@@ -334,7 +334,7 @@ void PTAMWrapper::HandleFrame()
   pthread_mutex_unlock(&filter->filter_CS);
 
   // ------------------------ do PTAM -------------------------
-  if (node->gui)
+  if (myGLWindow != 0)
   {
     myGLWindow->SetupViewport();
     myGLWindow->SetupVideoOrtho();
@@ -530,7 +530,7 @@ void PTAMWrapper::HandleFrame()
     // filter stuff
     lastScaleEKFtimestamp = mimFrameTime_workingCopy;
 
-    if (includedTime >= 2000 && framesIncludedForScaleXYZ > 1)	// ADD! (if too many, was resetted before...)
+    if (includedTime >= 2000 && framesIncludedForScaleXYZ > 1)  // ADD! (if too many, was resetted before...)
     {
       TooN::Vector < 3 > diffPTAM = PTAMResult.slice<0, 3>() - PTAMPositionForScale;
       bool zCorrupted, allCorrupted;
@@ -752,7 +752,7 @@ void PTAMWrapper::HandleFrame()
     //renderGrid(PTAMResultSE3);
 
     // draw HUD
-    if (node->gui)
+    //if(mod->getControlSystem()->isControlling())
     {
       myGLWindow->SetupViewport();
       myGLWindow->SetupVideoOrtho();
@@ -780,9 +780,9 @@ void PTAMWrapper::HandleFrame()
       glVertex2f(0.52 * frameWidth, 0.75 * frameHeight);
 
       glEnd();
-
-      myGLWindow->DrawCaption(msg);
     }
+
+    myGLWindow->DrawCaption(msg);
   }
 
   lastPTAMResultRaw = PTAMResultSE3;
@@ -823,7 +823,7 @@ void PTAMWrapper::HandleFrame()
     pthread_mutex_unlock(&(node->logPTAM_CS));
   }
 
-  if (node->gui)
+  if (myGLWindow != 0)
   {
     myGLWindow->swap_buffers();
     myGLWindow->HandlePendingEvents();
@@ -833,12 +833,9 @@ void PTAMWrapper::HandleFrame()
 // Draw the reference grid to give the user an idea of wether tracking is OK or not.
 void PTAMWrapper::renderGrid(TooN::SE3<> camFromWorld)
 {
-  if (node->gui)
-  {
-    myGLWindow->SetupViewport();
-    myGLWindow->SetupVideoOrtho();
-    myGLWindow->SetupVideoRasterPosAndZoom();
-  }
+  myGLWindow->SetupViewport();
+  myGLWindow->SetupVideoOrtho();
+  myGLWindow->SetupVideoRasterPosAndZoom();
 
   camFromWorld.get_translation() *= 1;
 
@@ -971,7 +968,7 @@ TooN::Vector<3> PTAMWrapper::evalNavQue(unsigned int from, unsigned int to, bool
 
   }
   //printf("QueEval: before: %i; skipped: %i, used: %i, left: %i\n", totSize, skipped, used, navInfoQueue.size());
-  predIMUOnlyForScale->z -= firstZ;	// make height to height-diff
+  predIMUOnlyForScale->z -= firstZ;      // make height to height-diff
 
   *zCorrupted = predIMUOnlyForScale->zCorrupted;
   *allCorrupted = abs(firstAdded - from) + abs(lastAdded - to) > 80;
@@ -1016,7 +1013,7 @@ void PTAMWrapper::newNavdata(ardrone_autonomy::Navdata* nav)
   pthread_mutex_lock(&navInfoQueueCS);
   navInfoQueue.push_back(lastNavinfoReceived);
 
-  if (navInfoQueue.size() > 1000)	// respective 5s
+  if (navInfoQueue.size() > 1000)      // respective 5s
   {
     navInfoQueue.pop_front();
     if (!navQueueOverflown)
