@@ -285,7 +285,7 @@ void PTAMWrapper::run()
 
       HandleFrame();
 
-      if (myGLWindow != 0 && changeSizeNextRender)
+      if (node->gui && changeSizeNextRender)
       {
         myGLWindow->set_size(desiredWindowSize);
         changeSizeNextRender = false;
@@ -301,7 +301,7 @@ void PTAMWrapper::run()
   }
 
   lock.unlock();
-  if (myGLWindow != 0)
+  if (node->gui)
   {
     delete myGLWindow;
   }
@@ -334,7 +334,7 @@ void PTAMWrapper::HandleFrame()
   pthread_mutex_unlock(&filter->filter_CS);
 
   // ------------------------ do PTAM -------------------------
-  if (myGLWindow != 0)
+  if (node->gui)
   {
     myGLWindow->SetupViewport();
     myGLWindow->SetupVideoOrtho();
@@ -823,7 +823,7 @@ void PTAMWrapper::HandleFrame()
     pthread_mutex_unlock(&(node->logPTAM_CS));
   }
 
-  if (myGLWindow != 0)
+  if (node->gui)
   {
     myGLWindow->swap_buffers();
     myGLWindow->HandlePendingEvents();
